@@ -12,6 +12,10 @@ import metaData
 import json
 from moviepy.editor import *
 
+
+"""
+Flask App defaults
+"""
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.mp4', '.asf', '.3gpp']

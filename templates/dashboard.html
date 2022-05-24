@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home | Behavioural Indices</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.0/dist/chart.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script type="application/json" src="C:/Users/tanve/PycharmProjects/Drowsiness_detection/indices_timestamped.json"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">Behavioural Indices</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="/dashboard">Dashboard</a>
+      </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/uploading">Processing Files</a>
+      </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/statistics">Statistics</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 ml-0 pl-0">
+            <div class="dropdown show" >
+              <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Select ID
+              </a>
+
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="#">1213XXX</a>
+                <a class="dropdown-item" href="#">1214XXX</a>
+                <a class="dropdown-item" href="#">1215XXX</a>
+              </div>
+            </div>
+            <div class="dropdown show">
+              <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuDate" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Select date
+              </a>
+
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" href="#">20210701</a>
+            <a class="dropdown-item" href="#">20210702</a>
+            <a class="dropdown-item" href="#">20210703</a>
+          </div>
+        </div>
+                </div>
+        <div class="col-lg-9">
+            <div class="container-fluid">
+                <div class="row">
+                        <div class="col-lg"><div id="curve_smoking"></div></div>
+                        <div class="col-lg"><div id="curve_distraction"></div></div>
+                </div>
+                <div class="row">
+                    <div class="col-lg"><div id="curve_eyeclosing"></div></div>
+                    <div class="col-lg"><div id="curve_crossinglane"></div></div>
+                </div>
+                <div class="row">
+                    <div class="col-lg">
+                        <div>
+
+                        </div>
+                    </div>
+                    <div class="col-lg">
+                        <div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+ <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Day', 'Smoke'],
+
+            {%  for index in data%}
+            {% if index.id == '1001' %}
+                ['{{ index.day}}', {{ index.smoking.total}}],
+            {%endif %}
+            {% endfor %}
+
+        ]);
+        var options = {
+          title: 'Smoking Frequency',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_smoking'));
+
+        chart.draw(data, options);
+      }
+ </script>
+<script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Day', 'Distraction'],
+
+            {%  for index in data%}
+            {% if index.id == '1001'%}
+                ['{{ index.day}}', {{ index.distraction.total}}],
+            {%endif %}
+            {% endfor %}
+
+        ]);
+        var options = {
+          title: 'Distraction Frequency',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_distraction'));
+
+        chart.draw(data, options);
+      }
+
+</script>
+
+<script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Day', 'Eye Blinking'],
+
+            {%  for index in data%}
+            {% if index.id == '1001'%}
+                ['{{ index.day}}', {{ index.eyeclosing.total}}],
+            {%endif %}
+            {% endfor %}
+
+        ]);
+        var options = {
+          title: 'Eye Blinking Frequency',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_eyeclosing'));
+
+        chart.draw(data, options);
+      }
+
+</script>
+<script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Day', 'LaneCrossing'],
+
+            {%  for index in data%}
+            {% if index.id == '1001'%}
+                ['{{ index.day}}', {{ index.crossinglane.total}}],
+            {%endif %}
+            {% endfor %}
+
+        ]);
+        var options = {
+          title: 'Lane Crossing Frequency',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_crossinglane'));
+
+        chart.draw(data, options);
+      }
+
+</script>
+
+</body>
+</html>

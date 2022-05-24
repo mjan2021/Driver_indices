@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Indices</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.print.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">Behavioural Indices</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/dashboard">Dashboard</a>
+      </li>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/uploading">Processing Files</a>
+      </li>
+         <li class="nav-item">
+          <a class="nav-link" href="/statistics">Statistics</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<br>
+
+<div class="container-fluid">
+<table class="display nowrap" id="example">
+  <thead class="thead-dark">
+    <tr>
+      <th style="" ></th>
+      <th scope="col">D-ID</th>
+      <th scope="col">Day</th>
+      <th scope="col">Duration(Minutes)</th>
+      <th scope="col">Smoking</th>
+      <th scope="col">Distraction</th>
+      <th scope="col">Closing Eyes</th>
+      <th scope="col">Yawning</th>
+      <th scope="col">Mobile Phone</th>
+      <th scope="col">Crossing Lanes</th>
+      <th scope="col">Near Collision</th>
+      <th scope="col">Stop Sign</th>
+      <th scope="col">Red Light</th>
+      <th scope="col">Pedestrian</th>
+    </tr>
+  </thead>
+  <tfoot class="thead-dark">
+    <tr>
+      <th></th>
+      <th>D-ID</th>
+      <th>Day</th>
+      <th>Duration(Minutes)</th>
+      <th>Smoking</th>
+      <th>Distraction</th>
+      <th>Closing Eyes</th>
+      <th>Yawning</th>
+      <th>Mobile Phone</th>
+      <th>Crossing Lanes</th>
+      <th>Near Collision</th>
+      <th>Stop Sign</th>
+      <th>Red Light</th>
+      <th>Pedestrian</th>
+    </tr>
+  </tfoot>
+
+<!--  <tbody>
+  {% for list_item in data%}
+
+    <tr>
+      <td>{{list_item.id}}</td>
+      <th scope="row">{{ list_item.day}}</th>
+      <td>{{list_item.duration}}</td>
+      <td>{{list_item.yawning}}</td>
+      <td>{{list_item.smoking}}</td>
+      <td>{{list_item.mobilephone}}</td>
+      <td>{{list_item.distraction}}</td>
+      <td>{{list_item.eyesclosing}}</td>
+    </tr>
+  </tbody>
+  {% endfor%} -->
+</table>
+</div>
+<style>
+td.details-control {
+    background: url("https://www.shareicon.net/data/128x128/2015/09/24/106382_add_512x512.png") no-repeat center;
+    background-size: contain;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url("https://www.shareicon.net/data/128x128/2015/09/24/106382_add_512x512.png") no-repeat center;
+    background-size: contain;
+}
+</style>
+<script>
+function dateListFormatter(list, id, colname){
+    strng = ''
+    for(var i=0;i<=list.length-1;i++){
+        date = new Date(list[i])
+        strng = strng + '<td><a href="/timestamp?id='+id+'&timestamp='+list[i]+'">'+ list[i] +'</a></td>'
+    }
+    return strng
+}
+
+function format ( d ) {
+    return '<table>' +
+        '<tbody>' +
+        '<tr>'+
+        '<td>Smoking</td><td>'+dateListFormatter(d.smoking.timestamp, d.id, 'Smoking')+'</td>' +
+        '</tr><tr>'+
+        '<td>Distraction</td><td>'+dateListFormatter(d.distraction.timestamp, d.id, 'Distraction')+'</td>' +
+        '</tr><tr>'+
+        '<td>Closing Eyes</td><td>'+dateListFormatter(d.eyeclosing.timestamp, d.id, 'Eyes-CLosing')+'</td>' +
+        '</tr><tr>'+
+        '<td>Yawn</td><td>'+dateListFormatter(d.yawn.timestamp, d.id, 'Yawn')+'</td>' +
+        '</tr><tr>'+
+        '<td>Mobile Phone</td><td>'+dateListFormatter(d.mobilephone.timestamp,  d.id, 'Mobile-Phone')+'</td>' +
+        '</tr><tr>'+
+        '<td>Crossing Lanes</td><td>'+dateListFormatter(d.crossinglane.timestamp, d.id,'Crossing Lane')+'</td>' +
+        '</tr><tr>'+
+        '<td>Near Collision</td><td>'+dateListFormatter(d.nearcollision.timestamp, d.id, 'Near-Collision')+'</td>' +
+        '</tr><tr>'+
+        '<td>Stop Sign</td><td>'+dateListFormatter(d.stopsign.timestamp, d.id, 'Stop-Sign')+'</td>' +
+        '</tr><tr>'+
+        '<td>Red Light</td><td>'+dateListFormatter(d.redlight.timestamp, d.id, 'Red-light')+'</td>' +
+        '</tr><tr>'+
+        '<td>Pedestrian</td><td>'+dateListFormatter(d.pedestrian.timestamp, d.id, 'Pedestrian')+'</td>' +
+        '</tr><tr>'+
+        '</tr>' +
+            '</tbody>' +
+            '</table>'
+}
+$(document).ready(function() {
+    // Multi-Column Filtering
+
+    $('#example thead tr').clone(true).appendTo( '#example thead' );
+    $('#example thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( table.column(i).search() !== this.value ) {
+                table
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
+    var table = $('#example').DataTable( {
+        ajax: "./Datafiles/datafile_may22.json",
+        pageLength: 30,
+        columns: [
+            {
+                "className":      'details-control',
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": ''
+            },
+            { data: "id" },
+            { data: "day" },
+            { data: "duration" },
+            { data: {
+                _: "smoking.total",
+                sort: "smoking.timestamp"
+                } },
+            { data: {
+                _:    "distraction.total",
+                sort: "distraction.timestamp"
+            } },
+            { data: {
+                _:    "eyeclosing.total",
+                sort: "eyeclosing.timestamp"
+            } },
+            { data: {
+                _:    "yawn.total",
+                sort: "yawn.timestamp"
+            } },
+            { data: {
+                _:    "mobilephone.total",
+                sort: "mobilephone.timestamp"
+            } },
+            { data: {
+                _:    "crossinglane.total",
+                sort: "crossinglane.timestamp"
+            } },
+            { data: {
+                _:    "nearcollision.total",
+                sort: "nearcollision.timestamp"
+            } },
+            { data: {
+                _:    "stopsign.total",
+                sort: "stopsign.timestamp"
+            } },
+            { data: {
+                _:    "redlight.total",
+                sort: "redlight.timestamp"
+            } },
+            { data: {
+                _:    "pedestrian.total",
+                sort: "pedestrian.timestamp"
+            } },
+        ],
+        dom: 'Bfrtip',
+        buttons: ['copy', 'csv', 'excel','pdf','print']
+    } );
+    $('#example tbody').on('click', 'td.details-control', function () {
+        var tr = $(this).closest('tr');
+        var row = table.row( tr );
+
+        if ( row.child.isShown() ) {
+            // This row is already open - close it
+            row.child.hide();
+            tr.removeClass('shown');
+        }
+        else {
+            // Open this row
+            row.child( format(row.data()) ).show();
+            tr.addClass('shown');
+        }
+    } );
+} );
+</script>
+
+</body>
+</html>
