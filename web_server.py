@@ -89,7 +89,7 @@ def statistics():
             datafile[id][0] += 1
             datafile[id][1] += round(duration/60)
 
-    path = 'D:\**\*.asf'
+    path = 'Z:/VIDEOS/**/Video/**/*.asf'
     files = glob.glob(path, recursive=True)
     # print(f"Files List: {glob.glob(path, recursive=True)}")
     for file in files:
@@ -111,6 +111,10 @@ def statistics():
 
     return render_template('statistics.html', files=datafile)
 
+@app.route('/db')
+def db():
+    print(f"Page visited")
+    return render_template('db.html')
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -176,6 +180,8 @@ def timestamp():
     # print(driver_files)
     filename = glob.glob('Z:/VideoPlayback/')
     return render_template('display.html', data=[filename])
+
+
 
 if __name__=='__main__':
     app.run()

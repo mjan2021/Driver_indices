@@ -6,7 +6,7 @@ import time
 
 # path = 'data/data/cam_test/alerts'
 path = 'C:/Users/tanve/Downloads/Research_Data/14072021/827000'
-# for file in os.listdir(path):
+
 #     if file.split('.')[-1] == 'mp4':
 #         print(file)
 def get_jpg_files(path):
