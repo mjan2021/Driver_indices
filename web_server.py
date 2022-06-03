@@ -37,6 +37,10 @@ def too_large(e):
     print(f"File too large")
     return "File is too large", 413
 
+@app.errorhandler(404)
+def notFound(e):
+    print(f"Page Not found")
+    return render_template('index.html')
 
 @app.route('/')
 def display():
@@ -114,7 +118,7 @@ def statistics():
 @app.route('/db')
 def db():
     print(f"Page visited")
-    return render_template('db.html')
+    return render_template('db.html', data=['1'])
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -184,5 +188,5 @@ def timestamp():
 
 
 if __name__=='__main__':
-    app.run()
     app.config["TEMPLATES_AUTO_RELOAD"] = True
+    app.run()
