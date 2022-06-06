@@ -1,7 +1,6 @@
 import glob
-
+from  tqdm import tqdm
 import cv2
-
 import metaData
 from flask import Flask
 from flask import render_template, request, redirect, url_for, abort, send_from_directory
@@ -50,7 +49,6 @@ def display():
         data = json.load(json_file)
     # print(type(data))
     return render_template('index.html', data = data)
-
 
 @app.route('/Datafiles/datafile_may22.json')
 def ajax():
@@ -117,8 +115,22 @@ def statistics():
 
 @app.route('/db')
 def db():
-    print(f"Page visited")
-    return render_template('db.html', data=['1'])
+    # print(f"Page visited")
+    with open('./Datafiles/test.json') as json_file:
+        data_file = json.load(json_file)
+    labels = []
+    dataset = []
+    for idx in tqdm(range(0, len(data_file))):
+        total = 0
+        data = data_file[idx]['data']
+        for idx_files in range(0, len(data)):
+            files = data_file[idx]['data'][idx_files]['files']
+            for all_file in files.values():
+                total += all_file
+        labels.append(data_file[idx]['driver_id'])
+        dataset.append(int(total))
+    print(f"Chart: {labels},\n Data : {dataset}")
+    return render_template('db.html', data=[labels, dataset])
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():

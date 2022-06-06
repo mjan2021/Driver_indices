@@ -1,33 +1,123 @@
 import os
 import glob
 import metaData
-# def update_duration(path):
-#     """
-#     Description: Get total time duration for driver and append to each driver per day. Duration is in hours
-#     :param path :type string - path of the video folder with raw video files
+import json
+from tqdm import tqdm
 #
-#     return None - duration are appended to the JSON datafile
-#     """
-#     print(f"Getting total durations by day...")
-#     duration = metaData.get_duration(path)
-#     for iterator in range(0, len(jsonIndices)):
-#         for index_duration in duration.keys():
-#             if index_duration.split('/')[-1] == jsonIndices[iterator]['day']:
-#                 if jsonIndices[iterator]['duration'] == 0.0:
-#                     jsonIndices[iterator]['duration'] = round(((duration[index_duration])/60)/4, 2)
+# excluded_list = ['1003 1004-nonAI', '1005-nonAI']
+# path = 'Z:/VIDEOS'
 #
-#     return duration
+# driver_camera_files = glob.glob(path+'/*/Video/**/*000.asf')
+# front_camera_files = glob.glob(path+'/*/Video/**/*100.asf')
 #
+# file_dict = {}
+# with open('./Datafiles/test.json') as stats_file:
+#     stats = json.load(stats_file)
+# print(f"Total Drivers Before: {len(stats)}")
 
-path = 'Z:/VIDEOS'
 
-driver_camera_files = glob.glob(path+'/*/Video/**/*000.asf')
-front_camera_files = glob.glob(path+'/*/Video/**/*100.asf')
 
-file_dict = {}
+# This chunk of code add the driver ids as the list to the json file.
+#
+# driver_ids = os.listdir(path)
+# for id in driver_ids:
+#     if id not in excluded_list:
+#         print(f"Processing driver: {id}")
+#         for idx in range(0, len(stats)):
+#             if stats[idx]['driver_id'] == id:
+#                 stats.append({'driver_id': id, "data": []})
+#                 dates = glob.glob('Z:/VIDEOS/' + id + '/Video/*')
+#                 for date in dates:
+#                     # print(f"Processing Date: {date}")
+#                     date = date.split('\\')[-1]
+#                     stats[-1]['data'].append({"date": date, "files": {}})
 
-for idx in range(0,len(front_camera_files)):
-    size  = os.path.getsize(driver_camera_files[idx])
+#
+#
+# combined_list = driver_camera_files + front_camera_files
+# print(f"Total Files: {len(combined_list)}, DMS: {len(driver_camera_files)}, ADAS: {len(front_camera_files)}")
+# for idx in tqdm(range(0, len(combined_list))):
+#     filename = combined_list[idx].split("\\")
+#     # print(filename)
+#     driver_id = filename[1]
+#     date = filename[3]
+#     file = filename[4]
+#     clean_filename = "/".join(filename)
+#     size = os.path.getsize(clean_filename)
+#     # print(stats)
+#     # print(f"driver: {driver_id}, date: {date}, filename: {file}, size: {size/1048576}Mb")
+#     for driver_idx in range(0, len(stats)):
+#         # print(json_idx['driver_id'])
+#         if stats[driver_idx]['driver_id'] == driver_id:
+#             for date_idx in range(0, len(stats[driver_idx]['data'])):
+#                 if stats[driver_idx]['data'][date_idx]['date'] == date:
+#                     stats[driver_idx]['data'][date_idx]['files'][file] = size/1048576
+#
+#
+# print(f"Total Driver After: {len(stats)}, \n {stats}")
+# with open('./Datafiles/test.json', 'w') as json_f:
+#     json.dump(stats, json_f)
 
-# print(driver_camera_files)
+# print(f"{driver_ids}")
+#
+def add_drivers_to_json(main_data_folder, json_file_path):
+    excluded_list = ['1003 1004-nonAI', '1005-nonAI']
+    driver_ids = os.listdir(main_data_folder)
+    with open(json_file_path) as json_file:
+        stats = json.load(json_file)
 
+    for id in driver_ids:
+        if id not in excluded_list:
+            print(f"Processing driver: {id}")
+            stats.append({'driver_id': id, "data": []})
+            for idx in range(0, len(stats)):
+                # if stats[idx]['driver_id'] == id:
+                #     # stats.append({'driver_id': id, "data": []})
+                dates = glob.glob('Z:/VIDEOS/' + id + '/Video/*')
+                for date in dates:
+                    # print(f"Processing Date: {date}")
+                    date = date.split('\\')[-1]
+                    stats[idx]['data'].append({"date": date, "files": {}})
+
+    print(stats)
+    with open(json_file_path, 'w') as json_f:
+        json.dump(stats, json_f)
+
+    return "Total Drivers Added: "+str(len(stats))
+
+def filling_driver_dates(path, json_file):
+
+    driver_camera_files = glob.glob(path + '/*/Video/**/*000.asf')
+    front_camera_files = glob.glob(path + '/*/Video/**/*100.asf')
+
+    file_dict = {}
+    with open(json_file) as stats_file:
+        stats = json.load(stats_file)
+    print(f"Total Drivers: {len(stats)}")
+
+    combined_list = driver_camera_files + front_camera_files
+    print(f"Total Files: {len(combined_list)}, DMS: {len(driver_camera_files)}, ADAS: {len(front_camera_files)}")
+    for idx in tqdm(range(0, len(combined_list))):
+        filename = combined_list[idx].split("\\")
+        # print(filename)
+        driver_id = filename[1]
+        date = filename[3]
+        file = filename[4]
+        clean_filename = "/".join(filename)
+        size = os.path.getsize(clean_filename)
+        # print(stats)
+        # print(f"driver: {driver_id}, date: {date}, filename: {file}, size: {size/1048576}Mb")
+        for driver_idx in range(0, len(stats)):
+            # print(json_idx['driver_id'])
+            if stats[driver_idx]['driver_id'] == driver_id:
+                for date_idx in range(0, len(stats[driver_idx]['data'])):
+                    if stats[driver_idx]['data'][date_idx]['date'] == date:
+                        stats[driver_idx]['data'][date_idx]['files'][file] = size / 1048576
+
+    print(f"Total Driver: {len(stats)}")
+    with open(json_file, 'w') as json_f:
+        json.dump(stats, json_f)
+    return "Data processed...."
+
+add_drivers_to_json('Z:/VIDEOS', './Datafiles/test.json')
+filling_driver_dates('Z:/VIDEOS', './Datafiles/test.json')
