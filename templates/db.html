@@ -44,6 +44,9 @@
     <div class="col-md-6">
     <div class="card">
       <div class="card-body">
+          <p>
+              Total Storage: {{ total}}  GB
+          </p>
        <canvas id="myChart" width="200" height="200"></canvas>
       </div>
     </div>
@@ -67,11 +70,14 @@
     labels: {{ data[0] | tojson}},
     datasets: [{
       label: 'Total Storage',
-      backgroundColor: ['rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)',
-                        'rgb(255, 255, 186)',
-                        'rgb(155, 155, 86)'],
+      backgroundColor:[
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.3)'
+            ],
       data: {{ data[1] | tojson }},
     }]
   };

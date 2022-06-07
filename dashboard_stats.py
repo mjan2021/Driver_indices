@@ -66,18 +66,31 @@ def add_drivers_to_json(main_data_folder, json_file_path):
     with open(json_file_path) as json_file:
         stats = json.load(json_file)
 
-    for id in driver_ids:
-        if id not in excluded_list:
-            print(f"Processing driver: {id}")
-            stats.append({'driver_id': id, "data": []})
-            for idx in range(0, len(stats)):
-                # if stats[idx]['driver_id'] == id:
-                #     # stats.append({'driver_id': id, "data": []})
-                dates = glob.glob('Z:/VIDEOS/' + id + '/Video/*')
-                for date in dates:
-                    # print(f"Processing Date: {date}")
-                    date = date.split('\\')[-1]
-                    stats[idx]['data'].append({"date": date, "files": {}})
+    # for id in driver_ids:
+    #     if id not in excluded_list:
+    #         print(f"Processing driver: {id}")
+    #         stats.append({'driver_id': id, "data": []})
+    #         for idx in range(0, len(stats)):
+    #             # if stats[idx]['driver_id'] == id:
+    #             #     # stats.append({'driver_id': id, "data": []})
+    #             dates = glob.glob('Z:/VIDEOS/' + id + '/Video/*')
+    #             for date in dates:
+    #                 # print(f"Processing Date: {date}")
+    #                 date = date.split('\\')[-1]
+    #                 stats[idx]['data'].append({"date": date, "files": {}})
+    #             del dates
+    #
+
+    for id in range(0, len(driver_ids)):
+        if driver_ids[id] not in excluded_list:
+            print(f"Processing driver: {driver_ids[id]}")
+            stats.append({'driver_id': driver_ids[id], "data": []})
+            dates = glob.glob('Z:/VIDEOS/' + driver_ids[id] + '/Video/*')
+            for date in dates:
+                # print(f"Processing Date: {date}")
+                date = date.split('\\')[-1]
+                stats[-1]['data'].append({"date": date, "files": {}})
+            del dates
 
     print(stats)
     with open(json_file_path, 'w') as json_f:
@@ -119,5 +132,5 @@ def filling_driver_dates(path, json_file):
         json.dump(stats, json_f)
     return "Data processed...."
 
-add_drivers_to_json('Z:/VIDEOS', './Datafiles/test.json')
-filling_driver_dates('Z:/VIDEOS', './Datafiles/test.json')
+# add_drivers_to_json('Z:/VIDEOS', './Datafiles/storage_stats.json')
+filling_driver_dates('Z:/VIDEOS', './Datafiles/storage_stats.json')

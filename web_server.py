@@ -30,6 +30,23 @@ def validate_image(stream):
         return None
     return '.' + (format if format != 'jpeg' else 'jpg')
 
+def get_driving_hours(jsonfile):
+    with open(jsonfile, 'r') as json_file:
+        data = json.load(json_file)
+    dr_hours = {}
+
+    for index in range(0,len(data['data'])):
+        id = data['data'][index]['id']
+        duration = data['data'][index]['duration']
+
+        if id not in dr_hours.keys():
+            dr_hours[id] = [1, round(duration/60)]
+
+        else:
+            dr_hours[id][0] += 1
+            dr_hours[id][1] += round(duration/60)
+
+    return dr_hours
 
 @app.errorhandler(413)
 def too_large(e):
@@ -116,10 +133,11 @@ def statistics():
 @app.route('/db')
 def db():
     # print(f"Page visited")
-    with open('./Datafiles/test.json') as json_file:
+    with open('./Datafiles/storage_stats.json') as json_file:
         data_file = json.load(json_file)
     labels = []
     dataset = []
+    total_storage = 0
     for idx in tqdm(range(0, len(data_file))):
         total = 0
         data = data_file[idx]['data']
@@ -129,8 +147,12 @@ def db():
                 total += all_file
         labels.append(data_file[idx]['driver_id'])
         dataset.append(int(total))
-    print(f"Chart: {labels},\n Data : {dataset}")
-    return render_template('db.html', data=[labels, dataset])
+        total_storage += total
+
+
+    hours = get_driving_hours('data_storage.json')
+    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2))
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
