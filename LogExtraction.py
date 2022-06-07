@@ -76,17 +76,7 @@ def update_duration(path):
 
     return duration
 
-
-# jsonIndices = read_data_from_json('indices_timestamped.json')
 jsonIndices = read_data_from_json(args.ifile)
-
-# print(f"Before : {jsonIndices}")
-# for index in jsonIndices:
-#     if index['id'] == "1212" and index["day"] == "2":
-#         print("it exist")
-#     else:
-#         print("doesn't")
-
 fileList = os.listdir(filePath)
 fileName = []
 
@@ -145,7 +135,11 @@ for index_counter in range(0, len(jsonIndices)):
             jsonIndices[index_counter]['crossinglane']['timestamp'].extend(indicesTimestamps['LDW_R'])
             jsonIndices[index_counter]['nearcollision']['timestamp'].extend(indicesTimestamps['FCW'])
 
-
+"""
+Above code add the indices but from the start, upgrade must be made so it only adds the new data not the old.
+possible solution for now: re-Run the file from start 
+future possible solution: should check for the date, if it exists in the json then ignore that date indices
+"""
 # updating the durations
 # duration = metaData.get_duration('C:/Users/tanve/Downloads/Research_Data/JoAnn_Video/827000/')
 # for index_counter in range(0, len(jsonIndices)):

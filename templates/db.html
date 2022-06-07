@@ -11,7 +11,8 @@
     <script type="application/json" src="C:/Users/tanve/PycharmProjects/Drowsiness_detection/indices_timestamped.json"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
-<div>
+<body>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand" href="#">Behavioural Indices</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,42 +41,90 @@
 <br>
 <div class="container">
     <div class="row">
-    <div class="col">
+    <div class="col-md-6">
     <div class="card">
       <div class="card-body">
        <canvas id="myChart" width="200" height="200"></canvas>
       </div>
     </div>
   </div>
+    <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+       <canvas id="myChart_2" width="200" height="200"></canvas>
+      </div>
     </div>
-</div> {{ data[0] }}
-    {{ data[1] }}
+  </div>
+    </div>
+</div>
 <script>
-const ctx = document.getElementById('myChart');
-const data = {
-  labels: [{% for item in data[0] %}
-                '{{item}}',
-            {% endfor %}
-  ]
-},
+  const data = {
+    labels: {{ data[0] | tojson}},
+    datasets: [{
+      label: 'My First dataset',
+      backgroundColor: ['rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(255, 255, 186)',
+                        'rgb(155, 155, 86)'],
+      data: {{ data[1] | tojson }},
+    }]
+  };
+  const config = {
+    type: 'pie',
+    data: data,
+    options: {
+        plugins: {
+            legend: {
+                position:'right'
+            }
+        }
+    }
+  };
+  const myChart = new Chart(
+    document.getElementById('myChart'),
+    config
+  );
+
+
+   const data_2 = {
+  labels: {{ data[0] | tojson}},
   datasets: [{
-    label: 'Driver IDs',
-    data: [{% for item in data[1] %}
-            {{item}},
-            {% endfor %}
-    ],
+    label: 'My First Dataset',
+    data: {{ data[1] | tojson }},
     backgroundColor: [
-      'rgb(255, 99, 132)',
-      'rgb(54, 162, 235)',
-      'rgb(255, 205, 86)'
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(255, 159, 64, 0.2)',
+      'rgba(255, 205, 86, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(153, 102, 255, 0.2)',
+      'rgba(201, 203, 207, 0.2)'
     ],
-    hoverOffset: 4
+    borderWidth: 1
   }]
 };
-const myChart = new Chart(ctx,  {
-  type: 'doughnut',
-  data: data,
-});
+  const config_2= {
+  type: 'bar',
+  data: data_2,
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Chart.js Bar Chart'
+      }
+    }
+  },
+};
+  const myChart_2 = new Chart(
+    document.getElementById('myChart_2'),
+    config_2
+  );
 </script>
+
 </body>
 </html>
