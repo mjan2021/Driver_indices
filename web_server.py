@@ -201,4 +201,4 @@ def timestamp():
 
 if __name__=='__main__':
     app.config["TEMPLATES_AUTO_RELOAD"] = True
-    app.run()
+    app.run(debug=True)

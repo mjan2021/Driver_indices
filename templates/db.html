@@ -23,9 +23,9 @@
       <li class="nav-item active">
         <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
       </li>
-      <li class="nav-item">
-          <a class="nav-link" href="/dashboard">Dashboard</a>
-      </li>
+{#      <li class="nav-item">#}
+{#          <a class="nav-link" href="/dashboard">Dashboard</a>#}
+{#      </li>#}
         <li class="nav-item">
           <a class="nav-link" href="/uploading">Processing Files</a>
       </li>
@@ -56,12 +56,17 @@
     </div>
   </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <canvas id="mychart_line"></canvas>
+        </div>
+    </div>
 </div>
 <script>
   const data = {
     labels: {{ data[0] | tojson}},
     datasets: [{
-      label: 'My First dataset',
+      label: 'Total Storage',
       backgroundColor: ['rgb(255, 99, 132)',
                         'rgb(54, 162, 235)',
                         'rgb(255, 205, 86)',
@@ -90,7 +95,7 @@
    const data_2 = {
   labels: {{ data[0] | tojson}},
   datasets: [{
-    label: 'My First Dataset',
+    label: 'Total Driving Hours',
     data: {{ data[1] | tojson }},
     backgroundColor: [
       'rgba(255, 99, 132, 0.2)',
@@ -114,7 +119,7 @@
         position: 'top',
       },
       title: {
-        display: true,
+        display: false,
         text: 'Chart.js Bar Chart'
       }
     }
@@ -122,6 +127,44 @@
 };
   const myChart_2 = new Chart(
     document.getElementById('myChart_2'),
+    config_2
+  );
+
+    const data_line = {
+  labels: {{ data[0] | tojson}},
+  datasets: [{
+    label: 'Total Driving Hours',
+    data: {{ data[1] | tojson }},
+    backgroundColor: [
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(255, 159, 64, 0.2)',
+      'rgba(255, 205, 86, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(153, 102, 255, 0.2)',
+      'rgba(201, 203, 207, 0.2)'
+    ],
+    borderWidth: 1
+  }]
+};
+  const config_line= {
+  type: 'bar',
+  data: data_2,
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: false,
+        text: 'Chart.js Bar Chart'
+      }
+    }
+  },
+};
+  const myChart_line = new Chart(
+    document.getElementById('mychart_line'),
     config_2
   );
 </script>
