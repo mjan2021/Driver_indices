@@ -38,14 +38,11 @@ def get_driving_hours(jsonfile):
     for index in range(0,len(data['data'])):
         id = data['data'][index]['id']
         duration = data['data'][index]['duration']
-
         if id not in dr_hours.keys():
             dr_hours[id] = [1, round(duration/60)]
-
         else:
-            dr_hours[id][0] += 1
-            dr_hours[id][1] += round(duration/60)
-
+            dr_hours[id][0] += 1 #Days
+            dr_hours[id][1] += round(duration/60) #hours
     return dr_hours
 
 @app.errorhandler(413)
@@ -138,6 +135,7 @@ def db():
     labels = []
     dataset = []
     total_storage = 0
+
     for idx in tqdm(range(0, len(data_file))):
         total = 0
         data = data_file[idx]['data']
@@ -149,10 +147,10 @@ def db():
         dataset.append(int(total))
         total_storage += total
 
-
+    total_drivers = len(os.listdir('Z:/VIDEOS'))
     hours = get_driving_hours('data_storage.json')
     print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2))
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2), total_drivers=total_drivers)
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():

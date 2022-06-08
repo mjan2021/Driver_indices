@@ -45,8 +45,9 @@
     <div class="card">
       <div class="card-body">
           <p>
-              Total Storage: {{ total}}  GB
+              Total Storage: {{ total}}  GB, Total Drivers: {{ total_drivers }}
           </p>
+
        <canvas id="myChart" width="200" height="200"></canvas>
       </div>
     </div>
@@ -97,21 +98,25 @@
     config
   );
 
-
    const data_2 = {
-  labels: {{ data[0] | tojson}},
+  labels:  [ {% for key, value in hours.items() %}
+  '{{ key }}',
+  {% endfor %}
+  ],
   datasets: [{
-    label: 'Total Driving Hours',
-    data: {{ data[1] | tojson }},
+    label: '',
+    data:  [ {% for key, value in hours.items() %}
+  {{ value[1] }},
+  {% endfor %}
+  ],
     backgroundColor: [
-      'rgba(255, 99, 132, 0.2)',
-      'rgba(255, 159, 64, 0.2)',
-      'rgba(255, 205, 86, 0.2)',
-      'rgba(75, 192, 192, 0.2)',
-      'rgba(54, 162, 235, 0.2)',
-      'rgba(153, 102, 255, 0.2)',
-      'rgba(201, 203, 207, 0.2)'
-    ],
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.3)'
+            ],
     borderWidth: 1
   }]
 };
@@ -125,8 +130,8 @@
         position: 'top',
       },
       title: {
-        display: false,
-        text: 'Chart.js Bar Chart'
+        display: true,
+        text: 'Total Driving Hours'
       }
     }
   },
@@ -137,25 +142,30 @@
   );
 
     const data_line = {
-  labels: {{ data[0] | tojson}},
+  labels: [ {% for key2, value2 in hours.items() %}
+  '{{ key2 }}',
+  {% endfor %}
+  ],
   datasets: [{
-    label: 'Total Driving Hours',
-    data: {{ data[1] | tojson }},
+    label: '',
+    data: [ {% for key2, value2 in hours.items() %}
+  '{{ value2[0]/value2[1] }}',
+  {% endfor %}
+  ],
     backgroundColor: [
-      'rgba(255, 99, 132, 0.2)',
-      'rgba(255, 159, 64, 0.2)',
-      'rgba(255, 205, 86, 0.2)',
-      'rgba(75, 192, 192, 0.2)',
-      'rgba(54, 162, 235, 0.2)',
-      'rgba(153, 102, 255, 0.2)',
-      'rgba(201, 203, 207, 0.2)'
-    ],
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.3)'
+            ],
     borderWidth: 1
   }]
 };
   const config_line= {
   type: 'bar',
-  data: data_2,
+  data: data_line,
   options: {
     responsive: true,
     plugins: {
@@ -163,15 +173,15 @@
         position: 'top',
       },
       title: {
-        display: false,
-        text: 'Chart.js Bar Chart'
+        display: true,
+        text: 'Average Driving Hours'
       }
     }
   },
 };
   const myChart_line = new Chart(
     document.getElementById('mychart_line'),
-    config_2
+    config_line
   );
 </script>
 
