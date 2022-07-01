@@ -84,6 +84,9 @@ def add_drivers_to_json(main_data_folder, json_file_path):
     for id in range(0, len(driver_ids)):
         if driver_ids[id] not in excluded_list:
             print(f"Processing driver: {driver_ids[id]}")
+            # condition must be inserted to check if the jsonfile have the driverID already
+            # if id_from_json in json[index]['driver_id]
+            #   not working -----
             stats.append({'driver_id': driver_ids[id], "data": []})
             dates = glob.glob('Z:/VIDEOS/' + driver_ids[id] + '/Video/*')
             for date in dates:
@@ -132,5 +135,8 @@ def filling_driver_dates(path, json_file):
         json.dump(stats, json_f)
     return "Data processed...."
 
+# Run this first
 # add_drivers_to_json('Z:/VIDEOS', './Datafiles/storage_stats.json')
-filling_driver_dates('Z:/VIDEOS', './Datafiles/storage_stats.json')
+#
+# then Run this second seperately
+filling_driver_dates('Z:/VIDEOS', 'Datafiles/storage_stats.json')

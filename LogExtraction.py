@@ -3,7 +3,9 @@ import json
 import random
 import metaData
 import argparse
+from tqdm import tqdm
 
+# Argument Parsers
 parser = argparse.ArgumentParser()
 parser.add_argument('-id','--id', dest='id', help='Driver id to be stored in file')
 parser.add_argument('-f', '--i'  'file', dest='ifile', help='Indices File Location with path')
@@ -46,7 +48,7 @@ def extract_indices_from_log(file):
                         error_files.append(file)
 
         logFile.close()
-        print(alarmsDict)
+        # print(alarmsDict)
     return alarmsDict, alarmsTimeStamp, error_files
 
 def retrieve_alarm(time):
@@ -115,7 +117,7 @@ for i in set(fileName):
 print(f"{len(jsonIndices)}")
 
 # appending the indices in the logfiles to datafile
-for index_counter in range(0, len(jsonIndices)):
+for index_counter in tqdm(range(0, len(jsonIndices))):
     for list_of_files in os.listdir(filePath):
         if str(list_of_files.split("-")[1]) == jsonIndices[index_counter]['day'] and jsonIndices[index_counter]['id'] == driverID:
             indices, indicesTimestamps, error_files_list = extract_indices_from_log(list_of_files)
@@ -151,6 +153,7 @@ future possible solution: should check for the date, if it exists in the json th
 
 
 update_duration(args.vfolder)
+
 data = {"data": jsonIndices}
 
 # Writing the indices to the json file

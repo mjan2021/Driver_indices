@@ -20,7 +20,7 @@ app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.mp4', '.asf', '.3gpp']
 app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection/uploads'
 path = 'data/data/cam_test/alerts'
-
+excluded_list = ['1003 1004-nonAI', '1005-nonAI',]
 
 def validate_image(stream):
     header = stream.read(512)
@@ -35,7 +35,9 @@ def get_driving_hours(jsonfile):
         data = json.load(json_file)
     dr_hours = {}
 
-    for index in range(0,len(data['data'])):
+    print(f"Extracting total driving hours...")
+    # this line was changed for tqdm
+    for index in tqdm(range(0,len(data['data']))):
         id = data['data'][index]['id']
         duration = data['data'][index]['duration']
         if id not in dr_hours.keys():
@@ -55,24 +57,24 @@ def notFound(e):
     print(f"Page Not found")
     return render_template('index.html')
 
-@app.route('/')
+@app.route('/db')
 def display():
     # files  = metaData.get_mp4_files(path)
     # print(files)
-    with open('./Datafiles/datafile_may22.json','r') as json_file:
+    with open('data_storage.json','r') as json_file:
         data = json.load(json_file)
     # print(type(data))
     return render_template('index.html', data = data)
 
-@app.route('/Datafiles/datafile_may22.json')
+@app.route('/data_storage.json')
 def ajax():
-    with open('./Datafiles/datafile_may22.json') as file:
+    with open('data_storage.json') as file:
         data = json.load(file)
     return data
 
 @app.route('/dashboard')
 def dashboard():
-    with open('./Datafiles/datafile_may22.json') as file:
+    with open('data_storage.json') as file:
         yawn, labels = list(), list()
         data = json.load(file)
         for index in range(0,len(data['data'])):
@@ -90,7 +92,7 @@ def index():
 
 @app.route('/statistics')
 def statistics():
-    with open('./Datafiles/datafile_may22.json', 'r') as json_file:
+    with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
     datafile = {}
 
@@ -113,13 +115,13 @@ def statistics():
         # print(id)
         file_meta = metaData.get_meta(file)
         # print(file_meta['filesize'])
-        print(f"{datafile}")
+        # print(f"{datafile}")
         if id in datafile.keys():
             # print(f"{len(datafile[id])}")
             if len(datafile[id]) < 3:
                 size = file_meta['filesize']/1073741824
                 datafile[id].append(round(size,2))
-                print(datafile)
+                # print(datafile)
             else:
                 size = file_meta['filesize']/1073741824
                 datafile[id][2] += round(size,2)
@@ -127,14 +129,15 @@ def statistics():
 
     return render_template('statistics.html', files=datafile)
 
-@app.route('/db')
+@app.route('/')
 def db():
     # print(f"Page visited")
-    with open('./Datafiles/storage_stats.json') as json_file:
+    with open('Datafiles/storage_stats.json') as json_file:
         data_file = json.load(json_file)
-    labels = []
-    dataset = []
+    labels, dataset = [],[]
+    start_end_date = {}
     total_storage = 0
+
 
     for idx in tqdm(range(0, len(data_file))):
         total = 0
@@ -147,10 +150,17 @@ def db():
         dataset.append(int(total))
         total_storage += total
 
-    total_drivers = len(os.listdir('Z:/VIDEOS'))
+    total_drivers = os.listdir('Z:/VIDEOS')
     hours = get_driving_hours('data_storage.json')
-    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2), total_drivers=total_drivers)
+    # print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+    print(f" Hours: {hours}")
+    for count in total_drivers:
+        if count not in excluded_list:
+            min_max = metaData.min_max_date(count)
+            start_end_date[count] = min_max
+
+    # print(f"Min_Max: {start_end_date}")
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2), total_drivers=len(total_drivers), start_end_date =start_end_date)
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -207,8 +217,7 @@ def timestamp():
     # clip.write_gif('C:/Users/tanve/PycharmProjects/Drowsiness_detection/test_gif.gif')
     clipped_video_folder = os.listdir('Z:/VideoPlayback/')
     clip.write_videofile('Z:/VideoPlayback/test.mp4', fps=15, audio=False)
-    clip_front.write_videofile('Z:/VideoPlayback/test_front.mp4', fps=15,
-                         audio=False)
+    clip_front.write_videofile('Z:/VideoPlayback/test_front.mp4', fps=15, audio=False)
 
     print(f"Time : {time} - CleanupTime : {driver_files[index]} - Difference: {d}")
 

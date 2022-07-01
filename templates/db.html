@@ -26,15 +26,15 @@
 {#      <li class="nav-item">#}
 {#          <a class="nav-link" href="/dashboard">Dashboard</a>#}
 {#      </li>#}
+      </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/db">Overview <span class="sr-only">(current)</span></a>
+      </li>
         <li class="nav-item">
           <a class="nav-link" href="/uploading">Processing Files</a>
       </li>
         <li class="nav-item">
           <a class="nav-link" href="/statistics">Statistics</a>
-      </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/db">Overview <span class="sr-only">(current)</span></a>
-      </li>
     </ul>
   </div>
 </nav>
@@ -55,7 +55,23 @@
     <div class="col-md-6">
     <div class="card">
       <div class="card-body">
-       <canvas id="myChart_2" width="200" height="200"></canvas>
+{#       <canvas id="myChart_2" width="200" height="200"></canvas>#}
+         <table class="table table-sm">
+              <tr>
+                <th>Driver Id</th>
+                <th>Start Date</th>
+                <th>Until Date</th>
+              </tr>
+
+                  {% for key, value in start_end_date.items() %}
+                        <tr>
+                      <td>{{ key }}</td>
+                      <td>{{ value[0]}}</td>
+                      <td>{{ value[1] }}</td>
+              </tr>
+                  {% endfor %}
+          </table>
+
       </div>
     </div>
   </div>

@@ -124,6 +124,13 @@ def indices_to_json(id, day, key, value):
     return data
 
 
+def min_max_date(driver_id):
+    path = 'Z:/VIDEOS/'+driver_id+'/Video/'
+    list_of_dates = os.listdir(path)
+    int_list = [int("".join(date.split('-'))) for date in list_of_dates]
+    min_value, max_value = min(int_list), max(int_list)
+    return [min_value, max_value]
+
 # f = get_jpg_files(path)
 # f = get_mp4_files(path)
 # dir ='C:/Users/tanve/Downloads/Research_Data/14072021/827000/'
