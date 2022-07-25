@@ -29,7 +29,7 @@ def extract_indices_from_log(file):
     alarmsTimeStamp = {'NOBODY': [], 'LOOKING_DOWN': [], 'SMOKING': [], 'CALLING':[], 'LDW': [], 'EYE_CLOSED': [], 'LDW_R': [], 'LDW_L':[], 'FCW':[], 'camera cover!':[], 'infrared block!': [] }
     # alarmsDict = {'alarm_type 5': 0, 'alarm_type 4': 0, 'alarm_type 3': 0, 'alarm_type 1': 0, 'alarm_type 2': 0, 'alarm_type 17': 0, 'alarm_type 18': 0, 'alarm_type 27':0, 'alarm_type 16':0, 'alarm_type 9':0, 'alarm_type 7': 0 }
     error_files = []
-    print(f"Processing debug file {file}")
+    # print(f"Processing debug file {file}")
     with open(os.path.join(filePath, file), 'r') as logFile:
         lines = logFile.read().splitlines()
         for line in lines:

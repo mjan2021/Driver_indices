@@ -56,22 +56,20 @@
     <div class="card">
       <div class="card-body">
 {#       <canvas id="myChart_2" width="200" height="200"></canvas>#}
-         <table class="table table-sm">
+         <table class="table table-sm table-responsive-md">
               <tr>
                 <th>Driver Id</th>
                 <th>Start Date</th>
                 <th>Until Date</th>
               </tr>
-
-                  {% for key, value in start_end_date.items() %}
-                        <tr>
-                      <td>{{ key }}</td>
-                      <td>{{ value[0]}}</td>
-                      <td>{{ value[1] }}</td>
+             {% for key, value in start_end_date.items() %}
+              <tr>
+                <td>{{ key }}</td>
+                <td>{{ value[0]}}</td>
+                <td>{{ value[1] }}</td>
               </tr>
-                  {% endfor %}
+             {% endfor %}
           </table>
-
       </div>
     </div>
   </div>
@@ -169,12 +167,8 @@
   {% endfor %}
   ],
     backgroundColor: [
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(255, 206, 86, 0.5)',
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(153, 102, 255, 0.6)',
-                'rgba(255, 159, 64, 0.3)'
+                'rgba(69,137,164,0.7)'
+
             ],
     borderWidth: 1
   }]

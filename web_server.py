@@ -35,7 +35,7 @@ def get_driving_hours(jsonfile):
         data = json.load(json_file)
     dr_hours = {}
 
-    print(f"Extracting total driving hours...")
+    # print(f"Extracting total driving hours...")
     # this line was changed for tqdm
     for index in tqdm(range(0,len(data['data']))):
         id = data['data'][index]['id']
@@ -153,13 +153,14 @@ def db():
     total_drivers = os.listdir('Z:/VIDEOS')
     hours = get_driving_hours('data_storage.json')
     # print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    print(f" Hours: {hours}")
+    # print(f" Hours: {hours}")
     for count in total_drivers:
         if count not in excluded_list:
             min_max = metaData.min_max_date(count)
             start_end_date[count] = min_max
 
     # print(f"Min_Max: {start_end_date}")
+    # print(f"{hours}")
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2), total_drivers=len(total_drivers), start_end_date =start_end_date)
 
 @app.route('/uploading', methods=['POST'])

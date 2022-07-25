@@ -125,10 +125,14 @@ def indices_to_json(id, day, key, value):
 
 
 def min_max_date(driver_id):
+    dateList = []
+    min_value, max_value = 0, 0
     path = 'Z:/VIDEOS/'+driver_id+'/Video/'
     list_of_dates = os.listdir(path)
-    int_list = [int("".join(date.split('-'))) for date in list_of_dates]
-    min_value, max_value = min(int_list), max(int_list)
+    if list_of_dates != None:
+        int_list = [int("".join(date.split('-'))) for date in list_of_dates]
+        min_value, max_value = min(int_list), max(int_list)
+    # min_value, max_value = min(dateList), max(dateList)
     return [min_value, max_value]
 
 # f = get_jpg_files(path)
