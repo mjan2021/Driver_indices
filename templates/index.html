@@ -50,7 +50,7 @@
 <div class="container-fluid">
 <table class="display nowrap" id="example">
   <thead class="thead-dark">
-    <tr>
+
       <th style="" ></th>
       <th scope="col">D-ID</th>
       <th scope="col">Day</th>
@@ -65,7 +65,7 @@
       <th scope="col">Stop Sign</th>
       <th scope="col">Red Light</th>
       <th scope="col">Pedestrian</th>
-    </tr>
+
   </thead>
   <tfoot class="thead-dark">
     <tr>
@@ -225,7 +225,35 @@ $(document).ready(function() {
             } },
         ],
         dom: 'Bfrtip',
-        buttons: ['copy', 'csv', 'excel','pdf','print']
+        buttons: [
+        {
+            extend: 'excel',
+            header: true,
+            footer: true,
+
+        },
+            {
+            extend: 'csv',
+            header: true,
+            footer: true,
+
+        },
+        {
+            extend: 'print',
+            header: true,
+
+        },
+        {
+            extend: 'copy',
+            header: true,
+
+        },
+        {
+            extend: 'pdf',
+            header: true,
+
+        },
+    ]
     } );
     $('#example tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
