@@ -8,7 +8,7 @@ import time
 path = 'C:/Users/tanve/Downloads/Research_Data/14072021/827000'
 
 # videos_url = 'Z:/VIDEOS'
-videos_url = '/mnt/ivsdccoa/VIDEOS'
+videos_url = '/mnt/ivsdccoa/VIDEOS/'
 
 #     if file.split('.')[-1] == 'mp4':
 #         print(file)
