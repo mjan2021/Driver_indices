@@ -163,7 +163,7 @@
   datasets: [{
     label: '',
     data: [ {% for key2, value2 in hours.items() %}
-  '{{ value2[0]/value2[1] }}',
+  '{{ value2[0] / value2[1] }}',
   {% endfor %}
   ],
     backgroundColor: [

@@ -22,6 +22,9 @@ app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection
 path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI',]
 
+# videos_url = 'Z:/VIDEOS'
+videos_url = '/mnt/VIDEOS'
+
 def validate_image(stream):
     header = stream.read(512)
     stream.seek(0)
@@ -107,7 +110,7 @@ def statistics():
             datafile[id][0] += 1
             datafile[id][1] += round(duration/60)
 
-    path = 'Z:/VIDEOS/**/Video/**/*.asf'
+    path = videos_url+'/**/Video/**/*.asf'
     files = glob.glob(path, recursive=True)
     # print(f"Files List: {glob.glob(path, recursive=True)}")
     for file in files:
@@ -150,7 +153,7 @@ def db():
         dataset.append(int(total))
         total_storage += total
 
-    total_drivers = os.listdir('Z:/VIDEOS')
+    total_drivers = os.listdir(videos_url)
     hours = get_driving_hours('data_storage.json')
     # print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
     # print(f" Hours: {hours}")
@@ -160,8 +163,20 @@ def db():
             start_end_date[count] = min_max
 
     # print(f"Min_Max: {start_end_date}")
+
+    # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+    list_of_zero_value_drivers = []
+    for key, value in hours.items():
+        if 0 in value:
+            list_of_zero_value_drivers.append(key)
+
+    print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+    for item in list_of_zero_value_drivers:
+        hours.pop(item, None)
+
     # print(f"{hours}")
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2), total_drivers=len(total_drivers), start_end_date =start_end_date)
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2),
+                           total_drivers=len(total_drivers), start_end_date =start_end_date)
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -183,8 +198,8 @@ def timestamp():
     date = "".join(list(ts)[:8]) # date extracted from indice timestamp
     playback_path = 'Z:/VideoPlayback'
 
-    driver = 'Z:/VIDEOS/' + id + '/**/*000.asf'
-    front = 'Z:/VIDEOS/' + id + '/**/*100.asf'  # Hard coded path - make sure it exist
+    driver = videos_url + id + '/**/*000.asf'
+    front = videos_url + id + '/**/*100.asf'  # Hard coded path - make sure it exist
 
     # driver = 'D:/'+id+'/**/*000.asf'
     # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist

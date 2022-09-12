@@ -1,0 +1,1 @@
+python .\LogExtraction.py -id 2047 -f data_storage.json --vfolder Z:/VIDEOS/2047/Video/ --lfolder Z:/VIDEOS/2047/Disk_files/debug/
