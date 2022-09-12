@@ -99,10 +99,17 @@
   const config = {
     type: 'pie',
     data: data,
+      scales: {
+        yAxes: [{
+            ticks: {
+                beginAtZero: true,
+            }
+        }]
+    },
     options: {
         plugins: {
             legend: {
-                position:'right'
+
             }
         }
     }
