@@ -7,6 +7,9 @@ import time
 # path = 'data/data/cam_test/alerts'
 path = 'C:/Users/tanve/Downloads/Research_Data/14072021/827000'
 
+# videos_url = 'Z:/VIDEOS'
+videos_url = '/mnt/ivsdccoa/VIDEOS'
+
 #     if file.split('.')[-1] == 'mp4':
 #         print(file)
 def get_jpg_files(path):
@@ -127,7 +130,7 @@ def indices_to_json(id, day, key, value):
 def min_max_date(driver_id):
     dateList = []
     min_value, max_value = 0, 0
-    path = 'Z:/VIDEOS/'+driver_id+'/Video/'
+    path = videos_url+driver_id+'/Video/'
     list_of_dates = os.listdir(path)
     if list_of_dates != None:
         int_list = [int("".join(date.split('-'))) for date in list_of_dates]
