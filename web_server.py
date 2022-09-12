@@ -23,7 +23,7 @@ path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI',]
 
 # videos_url = 'Z:/VIDEOS'
-videos_url = '/mnt/VIDEOS'
+videos_url = '/mnt/ivsdccoa/VIDEOS'
 
 def validate_image(stream):
     header = stream.read(512)
