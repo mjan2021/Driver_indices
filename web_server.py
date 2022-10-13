@@ -191,7 +191,7 @@ def db():
         hours.pop(item, None)
 
     # print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/*100.asf'))
+    Total_videos = len(glob.glob(videos_url+'/**/**/*100.asf'))
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
 
@@ -218,8 +218,8 @@ def timestamp():
     playback_path = video_playback
 
     print(f"URL Arguments >> Time: {time}, Date : {date} ")
-    driver = videos_url + '/' + id + '/**/*000.asf'
-    front = videos_url + '/' + id + '/**/*100.asf'  # Hard coded path - make sure it exist
+    driver = videos_url + '/' + id + '/Video/**/*000.asf'
+    front = videos_url + '/' + id + '/Video/**/*100.asf'  # Hard coded path - make sure it exist
 
     # driver = 'D:/'+id+'/**/*000.asf'
     # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist
