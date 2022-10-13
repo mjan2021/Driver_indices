@@ -14,7 +14,7 @@ from flask import render_template, request, redirect, url_for, abort, send_from_
 """
 Flask App defaults
 """
-app = Flask(__name__, static_folder='videoplayback')
+app = Flask(__name__, static_folder='Z:/VideoPlayback')
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.mp4', '.asf', '.3gpp']
 app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection/uploads'
@@ -22,8 +22,11 @@ path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
 # videos_url = 'Z:/VIDEOS'
-videos_url = '/mnt/ivsdccoa/VIDEOS'
+# videos_url = '/mnt/ivsdccoa/VIDEOS'
 
+# video_playback = 'Z:/VideoPlayback/'
+# video_playback ='videplayback/'
+video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
 def validate_image(stream):
     header = stream.read(512)
@@ -58,10 +61,10 @@ def too_large(e):
     return "File is too large...", 413
 
 
-@app.errorhandler(404)
-def notFound(e):
-    print(f"Page Not found")
-    return render_template('index.html')
+# @app.errorhandler(404)
+# def notFound(e):
+#     print(f"{e}")
+#     return render_template('index.html')
 
 
 @app.route('/db')
@@ -202,14 +205,15 @@ def upload_files():
 
 @app.route('/timestamp')
 def timestamp():
-    ts = request.args.get('timestamp')  # indice timestamp
+    ts = request.args.get('ts')  # indice timestamp
     id = request.args.get('id')  # driver id
-    time = ''.join(list(ts)[8:])  # time extracted from indice timestamp
+    time = "".join(list(ts)[8:])  # time extracted from indice timestamp
     date = "".join(list(ts)[:8])  # date extracted from indice timestamp
-    playback_path = 'Z:/VideoPlayback'
+    playback_path = video_playback
 
-    driver = videos_url + id + '/**/*000.asf'
-    front = videos_url + id + '/**/*100.asf'  # Hard coded path - make sure it exist
+    print(f"URL Arguments >> Time: {time}, Date : {date} ")
+    driver = videos_url +'/'+ id + '/**/*000.asf'
+    front = videos_url +'/' +id + '/**/*100.asf'  # Hard coded path - make sure it exist
 
     # driver = 'D:/'+id+'/**/*000.asf'
     # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist
@@ -220,10 +224,12 @@ def timestamp():
     # Cleaning the naming convention for files
     for idx in range(0, len(driver_files)):
         cleanup_date = "".join(driver_files[idx].split("\\")[-2].split('-'))
-        # matching date of indice with the folder with date
+
+        # matching date of indice with the folder date
         if cleanup_date == date:
             cleanup_filename = "".join(list(driver_files[idx].split('\\')[-1].split('.')[0])[1:7])
-            print(f"CleanUpfilename: {cleanup_filename}, time: {time}")
+
+            # matching Time of the indice with file name
             if int(cleanup_filename) < int(time):
                 d = int(time) - int(cleanup_filename)
                 differences_list.append([int(idx), d])
@@ -237,19 +243,22 @@ def timestamp():
             min_val = item[1]
             index = item[0]
 
-    # print(f"{index} - : {min_val}")
-    clip = VideoFileClip(driver_files[index]).subclip(d - 10, d + 10)
-    clip_front = VideoFileClip(front_files[index]).subclip(d - 10, d + 10)
+    print(f"{index} : {min_val}")
+    time_diff_value = round(d, 0) * 40
+    d = int(d - time_diff_value)
+    clip = VideoFileClip(driver_files[index]).subclip(d - 20, d + 10)
+    clip_front = VideoFileClip(front_files[index]).subclip(d - 20, d + 10)
+
     # clip.write_gif('C:/Users/tanve/PycharmProjects/Drowsiness_detection/test_gif.gif')
-    clipped_video_folder = os.listdir('Z:/VideoPlayback/')
-    clip.write_videofile('Z:/VideoPlayback/test.mp4', fps=15, audio=False)
-    clip_front.write_videofile('Z:/VideoPlayback/test_front.mp4', fps=15, audio=False)
+    clipped_video_folder = os.listdir(video_playback)
+    clip.write_videofile(video_playback+'test.mp4', fps=25, audio=False)
+    clip_front.write_videofile(video_playback+'test_front.mp4', fps=25, audio=False)
 
     print(f"Time : {time} - CleanupTime : {driver_files[index]} - Difference: {d}")
 
-    # print(f"{time} : time - {date} : date - {id} : ID")
+    print(f"{time} : time - {date} : date - {id} : ID")
     # print(driver_files)
-    filename = glob.glob('Z:/VideoPlayback/')
+    filename = glob.glob(video_playback)
     return render_template('display.html', data=[filename])
 
 
@@ -258,33 +267,6 @@ def validation_indices():
     filename = './videoplayback/test.mp4'
     return render_template('validation.html', filename=filename)
 
-
-@app.route('/validation')
-def upload_form():
-    return render_template('valiation.html')
-
-
-@app.route('/validation', methods=['POST'])
-def upload_video():
-    if 'file' not in request.files:
-        flash('No file part')
-        return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            flash('No image selected for uploading')
-            return redirect(request.url)
-        else:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # print('upload_video filename: ' + filename)
-            flash('Video successfully uploaded and displayed below')
-            return render_template('upload.html', filename=filename)
-
-
-@app.route('/display/<filename>')
-def display_video(filename):
-    # print('display_video filename: ' + filename)
-    return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
 
 if __name__ == '__main__':

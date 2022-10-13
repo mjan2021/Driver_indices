@@ -123,7 +123,7 @@ function dateListFormatter(list, id, colname){
     strng = ''
     for(var i=0;i<=list.length-1;i++){
         date = new Date(list[i])
-        strng = strng + '<td><a href="/timestamp?id='+id+'&timestamp='+list[i]+'">'+ list[i] +'</a></td>'
+        strng = strng + '<td><a href="/timestamp?id='+id+'&ts='+list[i]+'">'+ list[i] +'</a></td>'
     }
     return strng
 }
