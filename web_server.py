@@ -1,29 +1,29 @@
-import glob
-from  tqdm import tqdm
-import cv2
-import metaData
-from flask import Flask
-from flask import render_template, request, redirect, url_for, abort, send_from_directory
-from werkzeug.utils import secure_filename
-import imghdr
 import os
-import metaData
+import cv2
 import json
+import glob
+import imghdr
+import metaData
+import urllib.request
+from tqdm import tqdm
 from moviepy.editor import *
-
+from flask import Flask, flash
+from werkzeug.utils import secure_filename
+from flask import render_template, request, redirect, url_for, abort, send_from_directory
 
 """
 Flask App defaults
 """
-app = Flask(__name__)
+app = Flask(__name__, static_folder='videoplayback')
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.mp4', '.asf', '.3gpp']
 app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection/uploads'
 path = 'data/data/cam_test/alerts'
-excluded_list = ['1003 1004-nonAI', '1005-nonAI',]
+excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
 # videos_url = 'Z:/VIDEOS'
 videos_url = '/mnt/ivsdccoa/VIDEOS'
+
 
 def validate_image(stream):
     header = stream.read(512)
@@ -33,6 +33,7 @@ def validate_image(stream):
         return None
     return '.' + (format if format != 'jpeg' else 'jpg')
 
+
 def get_driving_hours(jsonfile):
     with open(jsonfile, 'r') as json_file:
         data = json.load(json_file)
@@ -40,34 +41,38 @@ def get_driving_hours(jsonfile):
 
     # print(f"Extracting total driving hours...")
     # this line was changed for tqdm
-    for index in tqdm(range(0,len(data['data']))):
+    for index in tqdm(range(0, len(data['data']))):
         id = data['data'][index]['id']
         duration = data['data'][index]['duration']
         if id not in dr_hours.keys():
-            dr_hours[id] = [1, round(duration/60)]
+            dr_hours[id] = [1, round(duration / 60)]
         else:
-            dr_hours[id][0] += 1 #Days
-            dr_hours[id][1] += round(duration/60) #hours
+            dr_hours[id][0] += 1  # Days
+            dr_hours[id][1] += round(duration / 60)  # hours
     return dr_hours
+
 
 @app.errorhandler(413)
 def too_large(e):
     print(f"File too large")
-    return "File is too large", 413
+    return "File is too large...", 413
+
 
 @app.errorhandler(404)
 def notFound(e):
     print(f"Page Not found")
     return render_template('index.html')
 
+
 @app.route('/db')
 def display():
     # files  = metaData.get_mp4_files(path)
     # print(files)
-    with open('data_storage.json','r') as json_file:
+    with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
     # print(type(data))
-    return render_template('index.html', data = data)
+    return render_template('index.html', data=data)
+
 
 @app.route('/data_storage.json')
 def ajax():
@@ -75,12 +80,13 @@ def ajax():
         data = json.load(file)
     return data
 
+
 @app.route('/dashboard')
 def dashboard():
     with open('data_storage.json') as file:
         yawn, labels = list(), list()
         data = json.load(file)
-        for index in range(0,len(data['data'])):
+        for index in range(0, len(data['data'])):
             if data['data'][index]['id'] == '1215':
                 yawns = data['data'][index]['yawn']['total']
                 yawn.append(yawns)
@@ -88,10 +94,12 @@ def dashboard():
     # print([yawn, labels])
     return render_template('dashboard.html', data=data['data'])
 
+
 @app.route('/uploading')
 def index():
     files = os.listdir(app.config['UPLOAD_PATH'])
     return render_template('uploading.html', files=files)
+
 
 @app.route('/statistics')
 def statistics():
@@ -99,18 +107,18 @@ def statistics():
         data = json.load(json_file)
     datafile = {}
 
-    for index in range(0,len(data['data'])):
+    for index in range(0, len(data['data'])):
         id = data['data'][index]['id']
         duration = data['data'][index]['duration']
 
         if id not in datafile.keys():
-            datafile[id] = [1, round(duration/60)]
+            datafile[id] = [1, round(duration / 60)]
 
         else:
             datafile[id][0] += 1
-            datafile[id][1] += round(duration/60)
+            datafile[id][1] += round(duration / 60)
 
-    path = videos_url+'/**/Video/**/*.asf'
+    path = videos_url + '/**/Video/**/*.asf'
     files = glob.glob(path, recursive=True)
     # print(f"Files List: {glob.glob(path, recursive=True)}")
     for file in files:
@@ -122,25 +130,25 @@ def statistics():
         if id in datafile.keys():
             # print(f"{len(datafile[id])}")
             if len(datafile[id]) < 3:
-                size = file_meta['filesize']/1073741824
-                datafile[id].append(round(size,2))
+                size = file_meta['filesize'] / 1073741824
+                datafile[id].append(round(size, 2))
                 # print(datafile)
             else:
-                size = file_meta['filesize']/1073741824
-                datafile[id][2] += round(size,2)
+                size = file_meta['filesize'] / 1073741824
+                datafile[id][2] += round(size, 2)
     # print(datafile)
 
     return render_template('statistics.html', files=datafile)
+
 
 @app.route('/')
 def db():
     # print(f"Page visited")
     with open('Datafiles/storage_stats.json') as json_file:
         data_file = json.load(json_file)
-    labels, dataset = [],[]
+    labels, dataset = [], []
     start_end_date = {}
     total_storage = 0
-
 
     for idx in tqdm(range(0, len(data_file))):
         total = 0
@@ -175,8 +183,9 @@ def db():
         hours.pop(item, None)
 
     # print(f"{hours}")
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage/1000,2),
-                           total_drivers=len(total_drivers), start_end_date =start_end_date)
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+                           total_drivers=len(total_drivers), start_end_date=start_end_date)
+
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -190,12 +199,13 @@ def upload_files():
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
     return '', 204
 
+
 @app.route('/timestamp')
 def timestamp():
-    ts = request.args.get('timestamp') #indice timestamp
-    id = request.args.get('id') # driver id
-    time = ''.join(list(ts)[8:]) # time extracted from indice timestamp
-    date = "".join(list(ts)[:8]) # date extracted from indice timestamp
+    ts = request.args.get('timestamp')  # indice timestamp
+    id = request.args.get('id')  # driver id
+    time = ''.join(list(ts)[8:])  # time extracted from indice timestamp
+    date = "".join(list(ts)[:8])  # date extracted from indice timestamp
     playback_path = 'Z:/VideoPlayback'
 
     driver = videos_url + id + '/**/*000.asf'
@@ -203,9 +213,9 @@ def timestamp():
 
     # driver = 'D:/'+id+'/**/*000.asf'
     # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist
-    driver_files = glob.glob(driver, recursive=True) # list of video for selected driver from driver facing camera
-    front_files = glob.glob(front, recursive=True) # list of videos for selected driver from front facing camera
-    differences_list = [] # nested list containing file indexes and difference of seconds from indice
+    driver_files = glob.glob(driver, recursive=True)  # list of video for selected driver from driver facing camera
+    front_files = glob.glob(front, recursive=True)  # list of videos for selected driver from front facing camera
+    differences_list = []  # nested list containing file indexes and difference of seconds from indice
 
     # Cleaning the naming convention for files
     for idx in range(0, len(driver_files)):
@@ -228,7 +238,7 @@ def timestamp():
             index = item[0]
 
     # print(f"{index} - : {min_val}")
-    clip = VideoFileClip(driver_files[index]).subclip(d-10, d+10)
+    clip = VideoFileClip(driver_files[index]).subclip(d - 10, d + 10)
     clip_front = VideoFileClip(front_files[index]).subclip(d - 10, d + 10)
     # clip.write_gif('C:/Users/tanve/PycharmProjects/Drowsiness_detection/test_gif.gif')
     clipped_video_folder = os.listdir('Z:/VideoPlayback/')
@@ -243,7 +253,40 @@ def timestamp():
     return render_template('display.html', data=[filename])
 
 
+@app.route('/validation')
+def validation_indices():
+    filename = './videoplayback/test.mp4'
+    return render_template('validation.html', filename=filename)
 
-if __name__=='__main__':
+
+@app.route('/validation')
+def upload_form():
+    return render_template('valiation.html')
+
+
+@app.route('/validation', methods=['POST'])
+def upload_video():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No image selected for uploading')
+            return redirect(request.url)
+        else:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # print('upload_video filename: ' + filename)
+            flash('Video successfully uploaded and displayed below')
+            return render_template('upload.html', filename=filename)
+
+
+@app.route('/display/<filename>')
+def display_video(filename):
+    # print('display_video filename: ' + filename)
+    return redirect(url_for('static', filename='uploads/' + filename), code=301)
+
+
+if __name__ == '__main__':
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.run(debug=True)
