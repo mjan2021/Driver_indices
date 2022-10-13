@@ -191,7 +191,7 @@ def db():
         hours.pop(item, None)
 
     # print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*100.asf'))
+    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
 
