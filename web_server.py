@@ -21,12 +21,17 @@ app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection
 path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
-# videos_url = 'Z:/VIDEOS'
-videos_url = '/mnt/ivsdccoa/VIDEOS/'
-
-# video_playback = 'Z:/VideoPlayback/'
-# video_playback ='videplayback/'
+# For Server
+videos_url = '/mnt/ivsdccoa/VIDEOS'
 video_playback = '/mnt/ivsdccoa/VideoPlayback/'
+
+# For Mounted Drive
+# videos_url = 'Z:/VIDEOS'
+# video_playback = 'Z:/VideoPlayback/'
+
+# For Internal Use
+# video_playback ='videplayback/'
+
 
 def validate_image(stream):
     header = stream.read(512)
@@ -186,8 +191,9 @@ def db():
         hours.pop(item, None)
 
     # print(f"{hours}")
+    Total_videos = len(glob.glob(videos_url+'/**/*100.asf'))
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                           total_drivers=len(total_drivers), start_end_date=start_end_date)
+                           total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
 
 
 @app.route('/uploading', methods=['POST'])
@@ -212,8 +218,8 @@ def timestamp():
     playback_path = video_playback
 
     print(f"URL Arguments >> Time: {time}, Date : {date} ")
-    driver = videos_url + id + '/**/*000.asf'
-    front = videos_url +id + '/**/*100.asf'  # Hard coded path - make sure it exist
+    driver = videos_url + '/' + id + '/**/*000.asf'
+    front = videos_url + '/' + id + '/**/*100.asf'  # Hard coded path - make sure it exist
 
     # driver = 'D:/'+id+'/**/*000.asf'
     # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist
