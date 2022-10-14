@@ -249,8 +249,8 @@ def timestamp():
     selected = min(differences_list.items(), key= lambda x:x[1])
 
     # print(f"index: d >>> {selected[0]} : {selected[1]}")
-
-    file_time = driver_files[selected[0]].split('\\')[-1].split('.')[0][1:7]
+    file_time = driver_files[selected[0]].replace('\\', '/')
+    file_time_clean = file_time.split('/')[-1].split('.')[0][1:7]
     file_formated = datetime.datetime.strptime(file_time, '%H%M%S').time()
     time_formated = datetime.datetime.strptime(time, '%H%M%S').time()
 
