@@ -51,23 +51,39 @@
   </div>
 </nav>
 <br>
-<h2>Driver Facing Camera</h2>
-<div style="margin:10px auto;">
-    <video autoplay="autoplay" controls="controls" preload="preload" width="640" height="480">
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Driver Facing Camera</h2>
+             <video autoplay="autoplay" controls="controls" preload="preload" width="640" height="480">
         <source src={{ url_for('static', filename="test.mp4") }} type="video/mp4">
     </video>
-</div>
-
-<h2>Front Facing Camera</h2>
-<div style="margin:10px auto;">
-    <video autoplay="autoplay" controls="controls" preload="preload" width="640" height="480">
+        </div>
+        <div class="col-md-4">
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="button">Validate</button>
+              <button class="btn btn-danger" type="button">Discard</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Front Facing Camera</h2>
+             <video autoplay="autoplay" controls="controls" preload="preload" width="640" height="480">
         <source src={{ url_for('static', filename="test_front.mp4") }} type="video/mp4">
     </video>
+        </div>
+        <div class="col-md-4">
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="button">Validate</button>
+              <button class="btn btn-danger" type="button">Discard</button>
+            </div>
+
+        </div>
+    </div>
 </div>
 
-<div>
-
-</div>
 
 </body>
 </html>

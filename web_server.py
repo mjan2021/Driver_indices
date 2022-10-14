@@ -23,12 +23,12 @@ path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
 # For Server
-videos_url = '/mnt/ivsdccoa/VIDEOS'
-video_playback = '/mnt/ivsdccoa/VideoPlayback/'
+# videos_url = '/mnt/ivsdccoa/VIDEOS'
+# video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
 # For Mounted Drive
-# videos_url = 'Z:/VIDEOS'
-# video_playback = 'Z:/VideoPlayback/'
+videos_url = 'Z:/VIDEOS'
+video_playback = 'Z:/VideoPlayback/'
 
 # For Internal Use
 # video_playback ='videplayback/'
@@ -231,11 +231,16 @@ def timestamp():
     # Cleaning the naming convention for files
     # print(f"DEBUG:: fileName: {driver_files[:10]}")
     for idx in range(0, len(driver_files)):
-        cleanup_date = "".join(driver_files[idx].split("\\")[-2].split('-'))
+        file_path = driver_files[idx].replace('\\', '/')
+        # cleanup_date = "".join(driver_files[idx].split("\\")[-2].split('-'))
+
+        cleanup_date = "".join(file_path.split('/')[-2].split('-'))
+        cleanup_filename = file_path.split('/')[-1].split('.')[0][1:7]
         # print(f"DEBUG:: Date> {cleanup_date}")
         # matching date of indice with the folder date
         if cleanup_date == date:
-            cleanup_filename = "".join(list(driver_files[idx].split('\\')[-1].split('.')[0])[1:7])
+            # cleanup_filename = "".join(list(driver_files[idx].split('\\')[-1].split('.')[0])[1:7])
+
             # matching Time of the indice with file name
             if int(cleanup_filename) < int(time):
                 d = int(time) - int(cleanup_filename)
@@ -243,7 +248,7 @@ def timestamp():
 
     selected = min(differences_list.items(), key= lambda x:x[1])
 
-    print(f"index: d >>> {selected[0]} : {selected[1]}")
+    # print(f"index: d >>> {selected[0]} : {selected[1]}")
 
     file_time = driver_files[selected[0]].split('\\')[-1].split('.')[0][1:7]
     file_formated = datetime.datetime.strptime(file_time, '%H%M%S').time()
@@ -265,9 +270,7 @@ def timestamp():
     clip.write_videofile(video_playback+'test.mp4', fps=30, audio=False)
     clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
 
-    print(f"Time : {time} - CleanupTime : {driver_files[selected[0]]} - Difference: {d}")
-    print(f"{time} : time - {date} : date - {id} : ID")
-    # print(driver_files)
+    print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
     filename = glob.glob(video_playback)
     return render_template('display.html', data=[filename])
 
