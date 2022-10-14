@@ -23,12 +23,12 @@ path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
 # For Server
-# videos_url = '/mnt/ivsdccoa/VIDEOS'
-# video_playback = '/mnt/ivsdccoa/VideoPlayback/'
+videos_url = '/mnt/ivsdccoa/VIDEOS'
+video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
 # For Mounted Drive
-videos_url = 'Z:/VIDEOS'
-video_playback = 'Z:/VideoPlayback/'
+# videos_url = 'Z:/VIDEOS'
+# video_playback = 'Z:/VideoPlayback/'
 
 # For Internal Use
 # video_playback ='videplayback/'
