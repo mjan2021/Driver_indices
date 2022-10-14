@@ -225,42 +225,38 @@ def timestamp():
     # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist
     driver_files = glob.glob(driver, recursive=True)  # list of video for selected driver from driver facing camera
     front_files = glob.glob(front, recursive=True)  # list of videos for selected driver from front facing camera
-    differences_list = []  # nested list containing file indexes and difference of seconds from indice
-
+    # differences_list = []  # nested list containing file indexes and difference of seconds from indice
+    differences_list = {}
     # Cleaning the naming convention for files
+    # print(f"DEBUG:: fileName: {driver_files[:10]}")
     for idx in range(0, len(driver_files)):
         cleanup_date = "".join(driver_files[idx].split("\\")[-2].split('-'))
-
+        # print(f"DEBUG:: Date> {cleanup_date}")
         # matching date of indice with the folder date
         if cleanup_date == date:
             cleanup_filename = "".join(list(driver_files[idx].split('\\')[-1].split('.')[0])[1:7])
-
             # matching Time of the indice with file name
             if int(cleanup_filename) < int(time):
                 d = int(time) - int(cleanup_filename)
-                differences_list.append([int(idx), d])
 
-    print(f"Differences_list : {differences_list}")
-    min_val = differences_list[0][1]
-    # print(f"Min_val: {min_val}")
-    for item in differences_list:
-        index = 0
-        if item[1] < min_val:
-            min_val = item[1]
-            index = item[0]
+                # differences_list.append([int(idx), d])
+                # differences_list.append({"idx": int(idx), "d": d})
+                differences_list[int(idx)] = d
+    # print(f"Differences_list : {differences_list}")
+    selected = min(differences_list.items(), key= lambda x:x[1])
 
-    print(f"{index} : {min_val}")
-    time_diff_value = round(d, 0) * 40
-    d = int(d - time_diff_value)
-    clip = VideoFileClip(driver_files[index]).subclip(d - 20, d + 10)
-    clip_front = VideoFileClip(front_files[index]).subclip(d - 20, d + 10)
+    # print(f"index: d >>> {selected[0]} : {selected[1]}")
+    time_diff_value = round(selected[1], 0) * 40
+    d = int(selected[1] - time_diff_value)
+    clip = VideoFileClip(driver_files[selected[0]]).subclip(d - 20, d + 10)
+    clip_front = VideoFileClip(front_files[selected[0]]).subclip(d - 20, d + 10)
 
     # clip.write_gif('C:/Users/tanve/PycharmProjects/Drowsiness_detection/test_gif.gif')
     clipped_video_folder = os.listdir(video_playback)
-    clip.write_videofile(video_playback+'test.mp4', fps=25, audio=False)
-    clip_front.write_videofile(video_playback+'test_front.mp4', fps=25, audio=False)
+    clip.write_videofile(video_playback+'test.mp4', fps=30, audio=False)
+    clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
 
-    print(f"Time : {time} - CleanupTime : {driver_files[index]} - Difference: {d}")
+    # print(f"Time : {time} - CleanupTime : {driver_files[selected[0]]} - Difference: {d}")
 
     print(f"{time} : time - {date} : date - {id} : ID")
     # print(driver_files)
