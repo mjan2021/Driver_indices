@@ -1,3 +1,4 @@
+import datetime
 import os
 import cv2
 import json
@@ -238,26 +239,33 @@ def timestamp():
             # matching Time of the indice with file name
             if int(cleanup_filename) < int(time):
                 d = int(time) - int(cleanup_filename)
-
-                # differences_list.append([int(idx), d])
-                # differences_list.append({"idx": int(idx), "d": d})
                 differences_list[int(idx)] = d
-    # print(f"Differences_list : {differences_list}")
+
     selected = min(differences_list.items(), key= lambda x:x[1])
 
-    # print(f"index: d >>> {selected[0]} : {selected[1]}")
-    time_diff_value = round(selected[1], 0) * 40
-    d = int(selected[1] - time_diff_value)
-    clip = VideoFileClip(driver_files[selected[0]]).subclip(d - 20, d + 10)
-    clip_front = VideoFileClip(front_files[selected[0]]).subclip(d - 20, d + 10)
+    print(f"index: d >>> {selected[0]} : {selected[1]}")
+
+    file_time = driver_files[selected[0]].split('\\')[-1].split('.')[0][1:7]
+    file_formated = datetime.datetime.strptime(file_time, '%H%M%S').time()
+    time_formated = datetime.datetime.strptime(time, '%H%M%S').time()
+
+    minutes_diff = time_formated.minute - file_formated.minute
+    seconds_diff = time_formated.second - file_formated.second
+
+    total_diff = (minutes_diff * 60) + seconds_diff
+
+    print(f"Difference (Seconds) : {total_diff}")
+    # time_diff_value = round(selected[1], 0) * 40
+    # d = int(selected[1] - time_diff_value)
+    clip = VideoFileClip(driver_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
+    clip_front = VideoFileClip(front_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
 
     # clip.write_gif('C:/Users/tanve/PycharmProjects/Drowsiness_detection/test_gif.gif')
     clipped_video_folder = os.listdir(video_playback)
     clip.write_videofile(video_playback+'test.mp4', fps=30, audio=False)
     clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
 
-    # print(f"Time : {time} - CleanupTime : {driver_files[selected[0]]} - Difference: {d}")
-
+    print(f"Time : {time} - CleanupTime : {driver_files[selected[0]]} - Difference: {d}")
     print(f"{time} : time - {date} : date - {id} : ID")
     # print(driver_files)
     filename = glob.glob(video_playback)
