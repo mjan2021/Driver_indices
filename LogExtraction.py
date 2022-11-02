@@ -21,10 +21,15 @@ def extract_indices_from_log(file):
     """
     Description: Extract indices from the log files
 
-    :param file :type string - file path
+    Args:
+        file :type string - file path
 
-    returns dictionary with the indices
+    Returns:
+        dict(key: indice_type, value: indice_count
+        dict(key: indice_type, value: list(indice_timestamps)
+        list() : files with errors
     """
+
     alarmsDict = {'NOBODY': 0, 'LOOKING_DOWN': 0, 'SMOKING': 0, 'CALLING':0, 'LDW': 0, 'EYE_CLOSED': 0, 'LDW_R': 0, 'LDW_L':0, 'FCW':0, 'camera cover!':0, 'infrared block!': 0 }
     alarmsTimeStamp = {'NOBODY': [], 'LOOKING_DOWN': [], 'SMOKING': [], 'CALLING':[], 'LDW': [], 'EYE_CLOSED': [], 'LDW_R': [], 'LDW_L':[], 'FCW':[], 'camera cover!':[], 'infrared block!': [] }
     # alarmsDict = {'alarm_type 5': 0, 'alarm_type 4': 0, 'alarm_type 3': 0, 'alarm_type 1': 0, 'alarm_type 2': 0, 'alarm_type 17': 0, 'alarm_type 18': 0, 'alarm_type 27':0, 'alarm_type 16':0, 'alarm_type 9':0, 'alarm_type 7': 0 }
