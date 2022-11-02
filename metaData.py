@@ -7,7 +7,10 @@ import time
 # path = 'data/data/cam_test/alerts'
 path = 'C:/Users/tanve/Downloads/Research_Data/14072021/827000'
 
-# videos_url = 'Z:/VIDEOS'
+# For Mounted Drive
+# videos_url = 'Z:/VIDEOS/'
+
+# For Server
 videos_url = '/mnt/ivsdccoa/VIDEOS/'
 
 #     if file.split('.')[-1] == 'mp4':

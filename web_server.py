@@ -15,7 +15,12 @@ from flask import render_template, request, redirect, url_for, abort, send_from_
 """
 Flask App defaults
 """
-app = Flask(__name__, static_folder='Z:/VideoPlayback')
+
+# Local Video Address
+# app = Flask(__name__, static_folder='Z:/VideoPlayback')
+
+# Server Video Address
+app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.mp4', '.asf', '.3gpp']
 app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection/uploads'
@@ -212,18 +217,18 @@ def upload_files():
 
 @app.route('/timestamp')
 def timestamp():
+    """
+    Extract part of video based on the timestamp of the indice
+    :return: render_template
+    """
     ts = request.args.get('ts')  # indice timestamp
     id = request.args.get('id')  # driver id
     time = "".join(list(ts)[8:])  # time extracted from indice timestamp
     date = "".join(list(ts)[:8])  # date extracted from indice timestamp
     playback_path = video_playback
-
     print(f"URL Arguments >> Time: {time}, Date : {date} ")
     driver = videos_url + '/' + id + '/Video/**/*000.asf'
     front = videos_url + '/' + id + '/Video/**/*100.asf'  # Hard coded path - make sure it exist
-
-    # driver = 'D:/'+id+'/**/*000.asf'
-    # front = 'D:/'+id+'/**/*100.asf' # Hard coded path - make sure it exist
     driver_files = glob.glob(driver, recursive=True)  # list of video for selected driver from driver facing camera
     front_files = glob.glob(front, recursive=True)  # list of videos for selected driver from front facing camera
     # differences_list = []  # nested list containing file indexes and difference of seconds from indice
@@ -232,31 +237,23 @@ def timestamp():
     # print(f"DEBUG:: fileName: {driver_files[:10]}")
     for idx in range(0, len(driver_files)):
         file_path = driver_files[idx].replace('\\', '/')
-        # cleanup_date = "".join(driver_files[idx].split("\\")[-2].split('-'))
-
         cleanup_date = "".join(file_path.split('/')[-2].split('-'))
         cleanup_filename = file_path.split('/')[-1].split('.')[0][1:7]
-        # print(f"DEBUG:: Date> {cleanup_date}")
         # matching date of indice with the folder date
         if cleanup_date == date:
-            # cleanup_filename = "".join(list(driver_files[idx].split('\\')[-1].split('.')[0])[1:7])
-
             # matching Time of the indice with file name
             if int(cleanup_filename) < int(time):
                 d = int(time) - int(cleanup_filename)
                 differences_list[int(idx)] = d
 
     selected = min(differences_list.items(), key= lambda x:x[1])
-
     # print(f"index: d >>> {selected[0]} : {selected[1]}")
     file_time = driver_files[selected[0]].replace('\\', '/')
     file_time_clean = file_time.split('/')[-1].split('.')[0][1:7]
     file_formated = datetime.datetime.strptime(file_time_clean, '%H%M%S').time()
     time_formated = datetime.datetime.strptime(time, '%H%M%S').time()
-
     minutes_diff = time_formated.minute - file_formated.minute
     seconds_diff = time_formated.second - file_formated.second
-
     total_diff = (minutes_diff * 60) + seconds_diff
 
     print(f"Difference (Seconds) : {total_diff}")
