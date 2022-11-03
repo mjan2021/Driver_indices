@@ -1,9 +1,13 @@
+import argparse
 import datetime
 import os
 import cv2
 import json
 import glob
 import imghdr
+
+from jinja2 import defaults
+
 import metaData
 import urllib.request
 from tqdm import tqdm
@@ -27,6 +31,7 @@ app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection
 path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
+"""
 # For Server
 videos_url = '/mnt/ivsdccoa/VIDEOS'
 video_playback = '/mnt/ivsdccoa/VideoPlayback/'
@@ -37,7 +42,7 @@ video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
 # For Internal Use
 # video_playback ='videplayback/'
-
+"""
 
 def validate_image(stream):
     header = stream.read(512)
@@ -181,7 +186,7 @@ def db():
     # print(f" Hours: {hours}")
     for count in total_drivers:
         if count not in excluded_list:
-            min_max = metaData.min_max_date(count)
+            min_max = metaData.min_max_date(count, videos_url)
             start_end_date[count] = min_max
 
     # print(f"Min_Max: {start_end_date}")
@@ -280,5 +285,35 @@ def validation_indices():
 
 
 if __name__ == '__main__':
+
+    argsparser = argparse.ArgumentParser()
+    argsparser.add_argument('--type')
+    argsparser.add_argument('--server')
+    argsparser.add_argument('--local', action='store_true')
+
+    args = argsparser.parse_args()
+
+    if args.type == 'local':
+        videos_url = 'Z:/VIDEOS'
+        video_playback = 'Z:/VideoPlayback/'
+
+    elif args.type == 'server':
+        videos_url = '/mnt/ivsdccoa/VIDEOS'
+        video_playback = '/mnt/ivsdccoa/VideoPlayback/'
+
+    # For Server
+    # if args.server:
+    #     videos_url = '/mnt/ivsdccoa/VIDEOS'
+    #     video_playback = '/mnt/ivsdccoa/VideoPlayback/'
+    #
+    #
+    # # For Mounted Drive
+    # if args.local:
+    #     videos_url = 'Z:/VIDEOS'
+    #     video_playback = 'Z:/VideoPlayback/'
+
+    # For Internal Use
+    # video_playback ='videplayback/'
+
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.run(debug=True)

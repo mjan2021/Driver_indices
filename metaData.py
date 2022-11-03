@@ -130,10 +130,11 @@ def indices_to_json(id, day, key, value):
     return data
 
 
-def min_max_date(driver_id):
+def min_max_date(driver_id, url):
     dateList = []
     min_value, max_value = 0, 0
-    path = videos_url+driver_id+'/Video/'
+    # path = videos_url+driver_id+'/Video/'
+    path = url +'/'+driver_id + '/Video/'
     list_of_dates = os.listdir(path)
     if list_of_dates != None:
         int_list = [int("".join(date.split('-'))) for date in list_of_dates]
