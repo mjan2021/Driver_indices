@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
     <script type="application/json" src="C:/Users/tanve/PycharmProjects/Drowsiness_detection/indices_timestamped.json"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -43,21 +44,21 @@
     </form>
     <hr>
     {% for file in files %}
-      <img src="C:/Users/tanve/PycharmProjects/Drowsiness_detection/uploads/{{file}}" style="width: 64px">
-        {{ file}}
+      <a href='{{ file }}' style="width: 64px">
+          <p>{{ file }}</p>
+      </a>
     {% endfor %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+
 <script type="application/javascript">
         Dropzone.options.dropper = {
-            maxFilesize: 1024, // MB
+            maxFilesize: 50, // MB
             timeout: 180000, //ms
             init: function(){
                 this.on("addedfile", file => {
                     console.log('file is added')
                 })
             }
-};
-
-    </script>
+        };
+</script>
 </body>
 </html>

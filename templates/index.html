@@ -50,7 +50,16 @@
     </ul>
   </div>
 </nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <a href="/download_excel"><button class='btn btn-default'>Excel</button></a>
+            <a href="/download_csv"><button class='btn btn-default'>CSV</button></a>
+        </div>
+    </div>
+</div>
 
+<br>
 <div class="container-fluid">
 <table class="display nowrap" id="example">
   <thead class="thead-dark">
@@ -230,33 +239,6 @@ $(document).ready(function() {
         ],
         dom: 'Bfrtip',
         buttons: [
-        {
-            extend: 'excel',
-            header: true,
-            footer: true,
-
-        },
-            {
-            extend: 'csv',
-            header: true,
-            footer: true,
-
-        },
-        {
-            extend: 'print',
-            header: true,
-
-        },
-        {
-            extend: 'copy',
-            header: true,
-
-        },
-        {
-            extend: 'pdf',
-            header: true,
-
-        },
     ]
     } );
     $('#example tbody').on('click', 'td.details-control', function () {

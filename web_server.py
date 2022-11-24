@@ -5,16 +5,16 @@ import cv2
 import json
 import glob
 import imghdr
-
+import pandas as pd
 from jinja2 import defaults
-
+from pandas.io.json import json_normalize
 import metaData
 import urllib.request
 from tqdm import tqdm
 from moviepy.editor import *
 from flask import Flask, flash
 from werkzeug.utils import secure_filename
-from flask import render_template, request, redirect, url_for, abort, send_from_directory
+from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
 
 """
 Flask App defaults
@@ -25,9 +25,9 @@ Flask App defaults
 
 # Server Video Address
 app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
-app.config['UPLOAD_EXTENSIONS'] = ['.mp4', '.asf', '.3gpp']
-app.config['UPLOAD_PATH'] = 'C:/Users/tanve/PycharmProjects/Drowsiness_detection/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+app.config['UPLOAD_EXTENSIONS'] = ['.json',]
+app.config['UPLOAD_PATH'] = 'assets/uploads/'
 path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
@@ -116,7 +116,7 @@ def dashboard():
 
 @app.route('/uploading')
 def index():
-    files = os.listdir(app.config['UPLOAD_PATH'])
+    files = os.listdir(app.config['UPLOAD_PATH']+'convertedExcel/')
     return render_template('uploading.html', files=files)
 
 
@@ -210,14 +210,40 @@ def db():
 @app.route('/uploading', methods=['POST'])
 def upload_files():
     uploaded_file = request.files['file']
-    filename = secure_filename(uploaded_file.filename)
-    if filename != '':
-        file_ext = os.path.splitext(filename)[1]
-        # if file_ext not in app.config['UPLOAD_EXTENSIONS'] or file_ext != validate_image(uploaded_file.stream):
-        if file_ext not in app.config['UPLOAD_EXTENSIONS']:
-            return "Invalid image", 400
-        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-    return '', 204
+    json_path = str(app.config["UPLOAD_PATH"])+'/jsonfiles/'
+    excel_path = str(app.config["UPLOAD_PATH"])+'/convertedExcel/'
+    uploaded_file.save(json_path+str(uploaded_file.filename))
+    # filename = secure_filename(uploaded_file.filename)
+
+    with open(json_path+str(uploaded_file.filename)) as f:
+        jsonfile = json.load(f)
+    to_dataframe = pd.DataFrame(jsonfile['data'])
+    print(f'File Uploaded to : {excel_path} as {str(uploaded_file.filename.split(".")[0])+".xlsx"}')
+    to_dataframe.to_excel(os.path.join(excel_path, str(uploaded_file.filename.split('.')[0])+".xlsx"))
+
+    return ''
+
+@app.route('/download_excel')
+def download_excel():
+    file_path = 'data_storage.json'
+    with open(file_path) as f:
+        jsonfile = json.load(f)
+    to_dataframe = json_normalize(jsonfile['data'])
+    to_dataframe.to_excel('assets/uploads/convertedExcel/data_storage.xlsx')
+
+    return send_file('assets/uploads/convertedExcel/data_storage.xlsx', as_attachment=True)
+
+
+@app.route('/download_csv')
+def download_csv():
+    file_path = 'data_storage.json'
+    with open(file_path) as f:
+        jsonfile = json.load(f)
+    to_dataframe = json_normalize(jsonfile['data'])
+    to_dataframe.to_csv('assets/uploads/convertedExcel/data_storage.csv', sep=',', encoding='utf-8')
+
+    return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
+
 
 
 @app.route('/timestamp')
