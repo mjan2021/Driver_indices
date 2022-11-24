@@ -313,9 +313,7 @@ def validation_indices():
 if __name__ == '__main__':
 
     argsparser = argparse.ArgumentParser()
-    argsparser.add_argument('--type')
-    argsparser.add_argument('--server')
-    argsparser.add_argument('--local', action='store_true')
+    argsparser.add_argument('--type', help='server or local')
 
     args = argsparser.parse_args()
 
@@ -326,20 +324,6 @@ if __name__ == '__main__':
     elif args.type == 'server':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
-
-    # For Server
-    # if args.server:
-    #     videos_url = '/mnt/ivsdccoa/VIDEOS'
-    #     video_playback = '/mnt/ivsdccoa/VideoPlayback/'
-    #
-    #
-    # # For Mounted Drive
-    # if args.local:
-    #     videos_url = 'Z:/VIDEOS'
-    #     video_playback = 'Z:/VideoPlayback/'
-
-    # For Internal Use
-    # video_playback ='videplayback/'
 
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.run(debug=True)
