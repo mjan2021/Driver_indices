@@ -245,6 +245,15 @@ def download_csv():
     return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
 
 
+@app.route('/downloadjson')
+def downloadjson():
+    return send_file('data_storage.json', as_attachment=True)
+
+
+@app.route('/download_file', methods=['GET', 'POST'])
+def download_file():
+    file = request.args.get('file')
+    return send_file(f'./assets/uploads/convertedExcel/{file}', as_attachment=True)
 
 @app.route('/timestamp')
 def timestamp():

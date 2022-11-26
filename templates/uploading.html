@@ -40,14 +40,15 @@
   </div>
 </nav>
 <h1>File Upload</h1>
-    <form action="{{ url_for('upload_files') }}" class="dropzone" id="dropper">
-    </form>
-    <hr>
-    {% for file in files %}
-      <a href='{{ file }}' style="width: 64px">
-          <p>{{ file }}</p>
-      </a>
-    {% endfor %}
+<form action="{{ url_for('upload_files') }}" class="dropzone" id="dropper"></form>
+
+<hr>
+
+{% for file in files %}
+        <a href="/download_file?file={{ file }}" class="href">
+            <button class="btn btn-light">{{ file }}</button>
+        </a>
+{% endfor %}
 
 <script type="application/javascript">
         Dropzone.options.dropper = {
