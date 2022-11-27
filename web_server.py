@@ -44,6 +44,7 @@ video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 # video_playback ='videplayback/'
 """
 
+
 def validate_image(stream):
     header = stream.read(512)
     stream.seek(0)
@@ -77,10 +78,11 @@ def too_large(e):
     return "File is too large...", 413
 
 
-# @app.errorhandler(404)
-# def notFound(e):
-#     print(f"{e}")
-#     return render_template('index.html')
+@app.errorhandler(Exception)
+def redirect_home(E):
+    error = E
+    # print(f"{e}")
+    return redirect('/db')
 
 
 @app.route('/db')
@@ -202,9 +204,9 @@ def db():
         hours.pop(item, None)
 
     # print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+    total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                           total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+                           total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=total_videos)
 
 
 @app.route('/uploading', methods=['POST'])
@@ -222,6 +224,7 @@ def upload_files():
     to_dataframe.to_excel(os.path.join(excel_path, str(uploaded_file.filename.split('.')[0])+".xlsx"))
 
     return ''
+
 
 @app.route('/download_excel')
 def download_excel():
@@ -245,8 +248,8 @@ def download_csv():
     return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
 
 
-@app.route('/downloadjson')
-def downloadjson():
+@app.route('/download_json')
+def download_json():
     return send_file('data_storage.json', as_attachment=True)
 
 
@@ -254,6 +257,7 @@ def downloadjson():
 def download_file():
     file = request.args.get('file')
     return send_file(f'./assets/uploads/convertedExcel/{file}', as_attachment=True)
+
 
 @app.route('/timestamp')
 def timestamp():
