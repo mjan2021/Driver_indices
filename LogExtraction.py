@@ -17,6 +17,8 @@ filePath = args.logfolder
 driverID = args.id
 # driverID = "1213"
 
+
+
 def extract_indices_from_log(file):
     """
     Description: Extract indices from the log files
@@ -52,12 +54,22 @@ def extract_indices_from_log(file):
                     except Exception:
                         error_files.append(file)
 
-        logFile.close()
+        # logFile.close()
         # print(alarmsDict)
     return alarmsDict, alarmsTimeStamp, error_files
 
-def retrieve_alarm(time):
-    print('xx')
+
+def get_list_of_days():
+    days_list = {}
+    days = []
+    for i, d in enumerate(data['data'][:500]):
+        if d['id'] in days_list.keys():
+            days_list[d['id']].append(d['day'])
+        elif d['id'] not in days_list.keys():
+            days_list[d['id']] = list()
+            days_list[d['id']].append(d['day'])
+    return days_list
+
 
 def read_data_from_json(file):
     with open(file) as jsonFile:
@@ -114,9 +126,9 @@ for i in set(fileName):
             "eyeclosing": {"total": 0,  "timestamp" : []},
             "crossinglane": {"total": 0,"timestamp" : []},
             "nearcollision": {"total": 0, "timestamp" : []},
-            "stopsign": {"total": 0, "timestamp" : []},
-            "redlight": {"total": 0, "timestamp" : []},
-            "pedestrian": {"total": 0, "timestamp" : []}
+            "stopsign": {"total": 0, "timestamp": []},
+            "redlight": {"total": 0, "timestamp": []},
+            "pedestrian": {"total": 0, "timestamp": []}
              })
 
 print(f"{len(jsonIndices)}")
