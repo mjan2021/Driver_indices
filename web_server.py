@@ -24,7 +24,9 @@ Flask App defaults
 # app = Flask(__name__, static_folder='Z:/VideoPlayback')
 
 # Server Video Address
-app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
+# this can't be modified with function parameter
+# app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
+app = Flask(__name__, static_folder='Z:/VideoPlayback')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.json',]
 app.config['UPLOAD_PATH'] = 'assets/uploads/'
@@ -223,6 +225,7 @@ def upload_files():
 
     return ''
 
+
 @app.route('/download_excel')
 def download_excel():
     file_path = 'data_storage.json'
@@ -245,7 +248,6 @@ def download_csv():
     return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
 
 
-
 @app.route('/timestamp')
 def timestamp():
     """
@@ -254,6 +256,7 @@ def timestamp():
     """
     ts = request.args.get('ts')  # indice timestamp
     id = request.args.get('id')  # driver id
+    col = request.args.get('col')  # column name
     time = "".join(list(ts)[8:])  # time extracted from indice timestamp
     date = "".join(list(ts)[:8])  # date extracted from indice timestamp
     playback_path = video_playback
@@ -299,8 +302,9 @@ def timestamp():
     clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
 
     print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
-    filename = glob.glob(video_playback)
-    return render_template('display.html', data=[filename])
+    filename = glob.glob(playback_path+'*')
+    val = [ts, id, col]
+    return render_template('display.html', data=[filename], col=[col], val = val)
 
 
 @app.route('/validation')
@@ -308,13 +312,18 @@ def validation_indices():
     filename = './videoplayback/test.mp4'
     return render_template('validation.html', filename=filename)
 
+@app.route('/discard')
+def discarded_data():
+    col = request.args.get('col')
+    val = request.args.get('val')
+    print(val)
+
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
-
     argsparser = argparse.ArgumentParser()
     argsparser.add_argument('--type', help='server or local')
-
     args = argsparser.parse_args()
 
     if args.type == 'local':

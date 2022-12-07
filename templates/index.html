@@ -132,7 +132,7 @@ function dateListFormatter(list, id, colname){
     strng = ''
     for(var i=0;i<=list.length-1;i++){
         date = new Date(list[i])
-        strng = strng + '<td><a href="/timestamp?id='+id+'&ts='+list[i]+'">'+ list[i] +'</a></td>'
+        strng = strng + '<td><a href="/timestamp?id='+id+'&ts='+list[i]+'&col='+colname+'">'+ list[i] +'</a></td>'
     }
     return strng
 }
@@ -141,25 +141,25 @@ function format ( d ) {
     return '<table>' +
         '<tbody>' +
         '<tr>'+
-        '<td>Smoking</td><td>'+dateListFormatter(d.smoking.timestamp, d.id, 'Smoking')+'</td>' +
+        '<td>Smoking</td><td>'+dateListFormatter(d.smoking.timestamp, d.id, 'smoking')+'</td>' +
         '</tr><tr>'+
-        '<td>Distraction</td><td>'+dateListFormatter(d.distraction.timestamp, d.id, 'Distraction')+'</td>' +
+        '<td>Distraction</td><td>'+dateListFormatter(d.distraction.timestamp, d.id, 'distraction')+'</td>' +
         '</tr><tr>'+
-        '<td>Closing Eyes</td><td>'+dateListFormatter(d.eyeclosing.timestamp, d.id, 'Eyes-CLosing')+'</td>' +
+        '<td>Closing Eyes</td><td>'+dateListFormatter(d.eyeclosing.timestamp, d.id, 'eyeclosing')+'</td>' +
         '</tr><tr>'+
-        '<td>Yawn</td><td>'+dateListFormatter(d.yawn.timestamp, d.id, 'Yawn')+'</td>' +
+        '<td>Yawn</td><td>'+dateListFormatter(d.yawn.timestamp, d.id, 'yawn')+'</td>' +
         '</tr><tr>'+
-        '<td>Mobile Phone</td><td>'+dateListFormatter(d.mobilephone.timestamp,  d.id, 'Mobile-Phone')+'</td>' +
+        '<td>Mobile Phone</td><td>'+dateListFormatter(d.mobilephone.timestamp,  d.id, 'mobilephone')+'</td>' +
         '</tr><tr>'+
-        '<td>Crossing Lanes</td><td>'+dateListFormatter(d.crossinglane.timestamp, d.id,'Crossing Lane')+'</td>' +
+        '<td>Crossing Lanes</td><td>'+dateListFormatter(d.crossinglane.timestamp, d.id,'crossinglane')+'</td>' +
         '</tr><tr>'+
-        '<td>Near Collision</td><td>'+dateListFormatter(d.nearcollision.timestamp, d.id, 'Near-Collision')+'</td>' +
+        '<td>Near Collision</td><td>'+dateListFormatter(d.nearcollision.timestamp, d.id, 'nearcollision')+'</td>' +
         '</tr><tr>'+
-        '<td>Stop Sign</td><td>'+dateListFormatter(d.stopsign.timestamp, d.id, 'Stop-Sign')+'</td>' +
+        '<td>Stop Sign</td><td>'+dateListFormatter(d.stopsign.timestamp, d.id, 'stopsign')+'</td>' +
         '</tr><tr>'+
-        '<td>Red Light</td><td>'+dateListFormatter(d.redlight.timestamp, d.id, 'Red-light')+'</td>' +
+        '<td>Red Light</td><td>'+dateListFormatter(d.redlight.timestamp, d.id, 'redlight')+'</td>' +
         '</tr><tr>'+
-        '<td>Pedestrian</td><td>'+dateListFormatter(d.pedestrian.timestamp, d.id, 'Pedestrian')+'</td>' +
+        '<td>Pedestrian</td><td>'+dateListFormatter(d.pedestrian.timestamp, d.id, 'pedestrian')+'</td>' +
         '</tr><tr>'+
         '</tr>' +
             '</tbody>' +
