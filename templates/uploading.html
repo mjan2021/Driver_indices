@@ -24,8 +24,14 @@
       <li class="nav-item active">
         <a class="nav-link" href="/">Home</a>
       </li>
-         <li class="nav-item">
-          <a class="nav-link" href="/db">Overview</a>
+       <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Overview
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/db">All Data</a>
+          <a class="dropdown-item" href="/clean">Clean Data</a>
+        </div>
       </li>
 {#      <li class="nav-item">#}
 {#          <a class="nav-link" href="/dashboard">Dashboard</a>#}
@@ -47,7 +53,7 @@
     <h7>Upload your .json file to convert them into .xlsx format</h7>
 </div>
 
-<div class="containe">
+<div class="container">
     <form action="{{ url_for('upload_files') }}" class="dropzone" id="dropper"></form>
 </div>
 

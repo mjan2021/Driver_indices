@@ -32,8 +32,14 @@
         <a class="nav-link" href="/">Home </a>
       </li>
 
-         <li class="nav-item">
-          <a class="nav-link" href="/db">Overview <span class="sr-only">(current)</span></a>
+         <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Overview
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/db">All Data</a>
+          <a class="dropdown-item" href="/clean">Clean Data</a>
+        </div>
       </li>
 {#      <li class="nav-item">#}
 {#          <a class="nav-link" href="/dashboard">Dashboard</a>#}
@@ -62,8 +68,8 @@
         </div>
         <div class="col-md-4">
             <div class="d-grid gap-2">
-                <a href="/valid" class=""><button class="btn btn-primary" type="button">Validate</button></a>
-                <a href="/discard?val={{ val }}" class=""><button class="btn btn-danger" type="button">Discard</button></a>
+                <a href="/valid?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-primary" type="button">Validate</button></a>
+                <a href="/discard?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-danger" type="button">Discard</button></a>
             </div>
         </div>
     </div>
@@ -76,8 +82,8 @@
         </div>
         <div class="col-md-4">
             <div class="d-grid gap-2">
-              <a href="/valid" class=""><button class="btn btn-primary" type="button">Validate</button></a>
-              <a href="/discard?val={{ val }}" class=""><button class="btn btn-danger" type="button">Discard</button></a>
+              <a href="/valid?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-primary" type="button">Validate</button></a>
+              <a href="/discard?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-danger" type="button">Discard</button></a>
             </div>
         </div>
     </div>

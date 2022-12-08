@@ -15,7 +15,7 @@ from moviepy.editor import *
 from flask import Flask, flash
 from werkzeug.utils import secure_filename
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
-
+# from LogExtraction import read_data_from_json
 """
 Flask App defaults
 """
@@ -228,7 +228,7 @@ def upload_files():
 
 @app.route('/download_excel')
 def download_excel():
-    file_path = 'data_storage.json'
+    file_path = request.args.get('file')
     with open(file_path) as f:
         jsonfile = json.load(f)
     to_dataframe = json_normalize(jsonfile['data'])
@@ -239,13 +239,18 @@ def download_excel():
 
 @app.route('/download_csv')
 def download_csv():
-    file_path = 'data_storage.json'
+    file_path = request.args.get('file')
     with open(file_path) as f:
         jsonfile = json.load(f)
     to_dataframe = json_normalize(jsonfile['data'])
     to_dataframe.to_csv('assets/uploads/convertedExcel/data_storage.csv', sep=',', encoding='utf-8')
 
     return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
+
+@app.route('/download_json')
+def download_json():
+    file_path = request.args.get('file')
+    return send_file('assets/uploads/convertedExcel/data_storage.json', as_attachment=True)
 
 
 @app.route('/timestamp')
@@ -303,10 +308,10 @@ def timestamp():
 
     print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
     filename = glob.glob(playback_path+'*')
-    val = [ts, id, col]
-    return render_template('display.html', data=[filename], col=[col], val = val)
+    # val = [ts, id, col]
+    return render_template('display.html', data=[filename], col=col, id=id, ts=ts)
 
-
+# this is called in display.html to check status of validated/discard buttons
 def check_validated_status(id, date, time, timestamp):
     print(f'Driver ID: {id}, Date: {date}, Time: {time}')
 
@@ -319,26 +324,157 @@ def validation_indices():
     filename = './videoplayback/test.mp4'
     return render_template('validation.html', filename=filename)
 
+@app.route('/valid')
+def valid():
+    col = str(request.args.get('col'))
+    ts = str(request.args.get('ts'))
+    id = str(request.args.get('id'))
+
+    print(f'col: {col}, ts: {ts}, id: {id}')
+
+    date = "".join(list(ts)[:8])
+
+    with open('validate.json', 'r') as ds:
+        valid = json.load(ds)
+
+    # get all drivers:
+    all_driver_ids = set()
+    for val in valid['data']:
+        all_driver_ids.add(val['id'])
+
+    # get all dates and append to dictionary where keys = driver id and values = list of dates
+    dates_list = {}
+    for item in all_driver_ids:
+        dates_list[item] = []
+
+    # append all the dates to dictionary
+    for val in valid['data']:
+        dates_list[val['id']].append(val['day'])
+
+    indice = {
+        "id": '',
+        "day": '',
+        "duration": 0.0,
+        "yawn": {"total": 0, "timestamp": []},
+        "smoking": {"total": 0, "timestamp": []},
+        "mobilephone": {"total": 0, "timestamp": []},
+        "distraction": {"total": 0, "timestamp": []},
+        "eyeclosing": {"total": 0, "timestamp": []},
+        "crossinglane": {"total": 0, "timestamp": []},
+        "nearcollision": {"total": 0, "timestamp": []},
+        "stopsign": {"total": 0, "timestamp": []},
+        "redlight": {"total": 0, "timestamp": []},
+        "pedestrian": {"total": 0, "timestamp": []}
+    }
+    print(f'All Driver Dates: {dates_list}')
+    for idx, value in enumerate(valid['data']):
+        print(f'Index: {idx}, Value: {value["day"]} \n List of dates : {dates_list[value["id"]]}')
+
+        if date not in dates_list[value['id']]:
+            print(f'Not Present!')
+            indice['id'] = str(id)
+            indice['day'] = str(date)
+            indice[str(col)]['total'] += 1
+            indice[str(col)]['timestamp'].append(ts)
+            dates_list[value['id']].append(date)
+
+
+        elif date in dates_list[value['id']]:
+            print(f'Date Present in List:  Matching..')
+            if valid['data'][idx]['id'] == id and valid['data'][idx]['day'] == date:
+                print(f'Matching Timestamps...')
+                if ts not in valid['data'][idx][col]['timestamp']:
+                    valid['data'][idx][col]['total'] += 1
+                    valid['data'][idx][col]['timestamp'].append(ts)
+                    print(f'Matched...')
+                    break
+    valid['data'].append(indice)
+    print(f'Total Validated: {len(valid["data"])}')
+    with open('validate.json', 'w') as ds:
+        json.dump(valid, ds)
+
+    return redirect('/db')
+
+@app.route('/clean')
+def clean_data():
+    return render_template('clean.html')
+
+@app.route('/clean.json')
+def ajax_clean():
+    with open('validate.json') as file:
+        data = json.load(file)
+    return data
 
 @app.route('/discard')
 def discarded_data():
-    col = request.args.get('col')
-    val = request.args.get('val')
-    print(val)
-    date = "".join(list(val[0])[:8])
+    col = str(request.args.get('col'))
+    ts = str(request.args.get('ts'))
+    id = str(request.args.get('id'))
 
-    with open('discarded.json', 'a+') as ds:
+    print(f'col: {col}, ts: {ts}, id: {id}')
+
+    date = "".join(list(ts)[:8])
+
+    with open('discarded.json', 'r') as ds:
         discard = json.load(ds)
 
+    # get all drivers:
+    all_driver_ids = set()
+    for val in discard['data']:
+        all_driver_ids.add(val['id'])
+
+    # get all dates and append to dictionary where keys = driver id and values = list of dates
+    dates_list = {}
+    for item in all_driver_ids:
+        dates_list[item] = []
+
+    # append all the dates to dictionary
+    for val in discard['data']:
+        dates_list[val['id']].append(val['day'])
+
+    indice = {
+        "id": '',
+        "day": '',
+        "duration": 0.0,
+        "yawn": {"total": 0, "timestamp": []},
+        "smoking": {"total": 0, "timestamp": []},
+        "mobilephone": {"total": 0, "timestamp": []},
+        "distraction": {"total": 0, "timestamp": []},
+        "eyeclosing": {"total": 0, "timestamp": []},
+        "crossinglane": {"total": 0, "timestamp": []},
+        "nearcollision": {"total": 0, "timestamp": []},
+        "stopsign": {"total": 0, "timestamp": []},
+        "redlight": {"total": 0, "timestamp": []},
+        "pedestrian": {"total": 0, "timestamp": []}
+    }
+    print(f'All Driver Dates: {dates_list}')
     for idx, value in enumerate(discard['data']):
-        if discard[idx]['driverid'] == val[1] and discard[idx]['day'] == date and val[0] in discard[idx][col].timestamp: # val[0] is the timestamp
-            # create a file with one entry and check for that to disable.
-            #  Since we already check if is in the file while loading the oage so we do not need to check again  
-            pass
-        else:
-            discard[idx][col] = val[0]
-        
-    return render_template('index.html')
+        print(f'Index: {idx}, Value: {value["day"]} \n List of dates : {dates_list[value["id"]]}')
+
+        if date not in dates_list[value['id']]:
+            print(f'Not Present!')
+            indice['id'] = str(id)
+            indice['day'] = str(date)
+            indice[str(col)]['total'] += 1
+            indice[str(col)]['timestamp'].append(ts)
+            dates_list[value['id']].append(date)
+
+
+        elif date in dates_list[value['id']]:
+            print(f'Date Present in List:  Matching..')
+            if discard['data'][idx]['id'] == id and discard['data'][idx]['day'] == date:
+                print(f'Matching Timestamps...')
+                if ts not in discard['data'][idx][col]['timestamp']:
+                    discard['data'][idx][col]['total'] += 1
+                    discard['data'][idx][col]['timestamp'].append(ts)
+                    print(f'Matched...')
+                    break
+    discard['data'].append(indice)
+    print(f'Total Validated: {len(discard["data"])}')
+    with open('validate.json', 'w') as ds:
+        json.dump(discard, ds)
+
+    return redirect('/db')
 
 
 if __name__ == '__main__':
