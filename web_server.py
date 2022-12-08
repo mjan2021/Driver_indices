@@ -307,17 +307,37 @@ def timestamp():
     return render_template('display.html', data=[filename], col=[col], val = val)
 
 
+def check_validated_status(id, date, time, timestamp):
+    print(f'Driver ID: {id}, Date: {date}, Time: {time}')
+
+    with open('validated.json', 'a+') as val:
+        validated = json.load(val)
+
+
 @app.route('/validation')
 def validation_indices():
     filename = './videoplayback/test.mp4'
     return render_template('validation.html', filename=filename)
+
 
 @app.route('/discard')
 def discarded_data():
     col = request.args.get('col')
     val = request.args.get('val')
     print(val)
+    date = "".join(list(val[0])[:8])
 
+    with open('discarded.json', 'a+') as ds:
+        discard = json.load(ds)
+
+    for idx, value in enumerate(discard['data']):
+        if discard[idx]['driverid'] == val[1] and discard[idx]['day'] == date and val[0] in discard[idx][col].timestamp: # val[0] is the timestamp
+            # create a file with one entry and check for that to disable.
+            #  Since we already check if is in the file while loading the oage so we do not need to check again  
+            pass
+        else:
+            discard[idx][col] = val[0]
+        
     return render_template('index.html')
 
 

@@ -17,6 +17,7 @@ filePath = args.logfolder
 driverID = args.id
 # driverID = "1213"
 
+# create a function that take string path of excel file and read it as dataframe
 
 
 def extract_indices_from_log(file):
