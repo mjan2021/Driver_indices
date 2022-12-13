@@ -15,7 +15,7 @@ from moviepy.editor import *
 from flask import Flask, flash
 from werkzeug.utils import secure_filename
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
-# from LogExtraction import read_data_from_json
+
 """
 Flask App defaults
 """
@@ -35,9 +35,8 @@ excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
 
 """
 # For Server
-videos_url = '/mnt/ivsdccoa/VIDEOS'
-video_playback = '/mnt/ivsdccoa/VideoPlayback/'
-
+# videos_url = '/mnt/ivsdccoa/VIDEOS'
+# video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 # For Mounted Drive
 # videos_url = 'Z:/VIDEOS'
 # video_playback = 'Z:/VideoPlayback/'
@@ -60,7 +59,6 @@ def get_driving_hours(jsonfile):
         data = json.load(json_file)
     dr_hours = {}
 
-    # print(f"Extracting total driving hours...")
     # this line was changed for tqdm
     for index in tqdm(range(0, len(data['data']))):
         id = data['data'][index]['id']
@@ -87,14 +85,12 @@ def too_large(e):
 
 @app.route('/db')
 def display():
-    # files  = metaData.get_mp4_files(path)
-    # print(files)
     with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
-    # print(type(data))
+     
     return render_template('index.html', data=data)
 
-
+# data-tabel ajax call to get the data from json file
 @app.route('/data_storage.json')
 def ajax():
     with open('data_storage.json') as file:
@@ -112,7 +108,7 @@ def dashboard():
                 yawns = data['data'][index]['yawn']['total']
                 yawn.append(yawns)
                 labels.append(data['data'][index]['day'])
-    # print([yawn, labels])
+    
     return render_template('dashboard.html', data=data['data'])
 
 
@@ -266,27 +262,28 @@ def timestamp():
     date = "".join(list(ts)[:8])  # date extracted from indice timestamp
     playback_path = video_playback
     print(f"URL Arguments >> Time: {time}, Date : {date} ")
+    
     driver = videos_url + '/' + id + '/Video/**/*000.asf'
     front = videos_url + '/' + id + '/Video/**/*100.asf'  # Hard coded path - make sure it exist
     driver_files = glob.glob(driver, recursive=True)  # list of video for selected driver from driver facing camera
     front_files = glob.glob(front, recursive=True)  # list of videos for selected driver from front facing camera
-    # differences_list = []  # nested list containing file indexes and difference of seconds from indice
     differences_list = {}
+    
     # Cleaning the naming convention for files
-    # print(f"DEBUG:: fileName: {driver_files[:10]}")
     for idx in range(0, len(driver_files)):
         file_path = driver_files[idx].replace('\\', '/')
         cleanup_date = "".join(file_path.split('/')[-2].split('-'))
         cleanup_filename = file_path.split('/')[-1].split('.')[0][1:7]
+    
         # matching date of indice with the folder date
         if cleanup_date == date:
+    
             # matching Time of the indice with file name
             if int(cleanup_filename) < int(time):
                 d = int(time) - int(cleanup_filename)
                 differences_list[int(idx)] = d
 
     selected = min(differences_list.items(), key= lambda x:x[1])
-    # print(f"index: d >>> {selected[0]} : {selected[1]}")
     file_time = driver_files[selected[0]].replace('\\', '/')
     file_time_clean = file_time.split('/')[-1].split('.')[0][1:7]
     file_formated = datetime.datetime.strptime(file_time_clean, '%H%M%S').time()
@@ -296,28 +293,40 @@ def timestamp():
     total_diff = (minutes_diff * 60) + seconds_diff
 
     print(f"Difference (Seconds) : {total_diff}")
-    # time_diff_value = round(selected[1], 0) * 40
-    # d = int(selected[1] - time_diff_value)
     clip = VideoFileClip(driver_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
     clip_front = VideoFileClip(front_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
 
-    # clip.write_gif('C:/Users/tanve/PycharmProjects/Drowsiness_detection/test_gif.gif')
     clipped_video_folder = os.listdir(video_playback)
     clip.write_videofile(video_playback+'test.mp4', fps=30, audio=False)
     clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
 
     print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
     filename = glob.glob(playback_path+'*')
-    # val = [ts, id, col]
-    return render_template('display.html', data=[filename], col=col, id=id, ts=ts)
+
+    validated = check_validated_status(id, date, col, ts)
+    return render_template('display.html', data=[filename], col=col, id=id, ts=ts, validation=validated)
 
 # this is called in display.html to check status of validated/discard buttons
-def check_validated_status(id, date, time, timestamp):
-    print(f'Driver ID: {id}, Date: {date}, Time: {time}')
+def check_validated_status(id, date, col, timestamp):
+    print(f'Driver ID: {id}, Date: {date}, Column: {col}, Timestamp: {timestamp}')
 
-    with open('validated.json', 'a+') as val:
+    with open('validated.json', 'r') as val:
         validated = json.load(val)
 
+    with open('discarded.json', 'r') as dis:
+        discard = json.load(dis)
+
+    # Check if the indice exists in validated.json
+    for idx, val in enumerate(validated['data']):
+        if val['id'] == id and val['date'] == date and timestamp in val[col].timestamp:
+            return True
+            
+    # Check if the indice exists in discarded.json
+    for idx, val in enumerate(validated['data']):
+        if val['id'] == id and val['date'] == date and timestamp in val[col].timestamp:
+            return True
+    
+    return False
 
 @app.route('/validation')
 def validation_indices():

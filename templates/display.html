@@ -68,9 +68,11 @@
         </div>
         <div class="col-md-4">
             <div class="d-grid gap-2">
+              {% if validation %}
                 <a href="/valid?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-primary" type="button">Validate</button></a>
                 <a href="/discard?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-danger" type="button">Discard</button></a>
-            </div>
+              {% endif %}
+              </div>
         </div>
     </div>
     <div class="row">
@@ -82,8 +84,10 @@
         </div>
         <div class="col-md-4">
             <div class="d-grid gap-2">
+              {% if validation %}
               <a href="/valid?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-primary" type="button">Validate</button></a>
               <a href="/discard?ts={{ ts }}&id={{ id }}&col={{ col }}" class=""><button class="btn btn-danger" type="button">Discard</button></a>
+              {% endif %}
             </div>
         </div>
     </div>
