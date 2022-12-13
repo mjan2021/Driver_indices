@@ -441,6 +441,7 @@ def discarded_data():
     for val in discard['data']:
         dates_list[val['id']].append(val['day'])
 
+    
     indice = {
         "id": '',
         "day": '',
