@@ -255,6 +255,14 @@ def timestamp():
     Extract part of video based on the timestamp of the indice
     :return: render_template
     """
+    # Empty Cache Directory
+
+    video_cache = os.listdir(app.static_folder)
+    for file in video_cache:
+        os.remove(os.path.join(app.static_folder, file))
+
+    print(f'Cache Cleared...')
+
     ts = request.args.get('ts')  # indice timestamp
     id = request.args.get('id')  # driver id
     col = request.args.get('col')  # column name
@@ -310,7 +318,7 @@ def timestamp():
 def check_validated_status(id, date, col, timestamp):
     print(f'Driver ID: {id}, Date: {date}, Column: {col}, Timestamp: {timestamp}')
 
-    with open('validated.json', 'r') as val:
+    with open('validate.json', 'r') as val:
         validated = json.load(val)
 
     with open('discarded.json', 'r') as dis:
@@ -318,12 +326,12 @@ def check_validated_status(id, date, col, timestamp):
 
     # Check if the indice exists in validated.json
     for idx, val in enumerate(validated['data']):
-        if val['id'] == id and val['date'] == date and timestamp in val[col].timestamp:
+        if val['id'] == id and val['day'] == date and timestamp in val[col].timestamp:
             return True
             
     # Check if the indice exists in discarded.json
     for idx, val in enumerate(validated['data']):
-        if val['id'] == id and val['date'] == date and timestamp in val[col].timestamp:
+        if val['id'] == id and val['day'] == date and timestamp in val[col].timestamp:
             return True
     
     return False

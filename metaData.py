@@ -3,7 +3,7 @@ from tinytag import TinyTag
 import json
 import PIL
 import time
-
+import tqdm
 # path = 'data/data/cam_test/alerts'
 path = 'C:/Users/tanve/Downloads/Research_Data/14072021/827000'
 
@@ -67,6 +67,8 @@ def convert_timestamp(timestamp):
 def get_duration(path):
     f_list, f_dict = [], {}
     # Glob - getting list of files
+    counter = 0
+    total_fileList = len(os.listdir(path))
     for directory, subdirectory, fileList  in os.walk(path):
         dur = 0
         # print(f"{directory} : {subdirectory} : {fileList}")
@@ -77,7 +79,8 @@ def get_duration(path):
             if metas['duration'] < 10000:
                 dur += int(metas['duration'])
         dir_split = "".join(directory.split("\\")[-1].split("-"))
-        print(dir_split)
+        print(f'Processing : {counter}/{total_fileList}, File: {dir_split}')
+        counter += 1
         f_dict[dir_split] = dur
     # print(f"Total File: {len(f_list)}")
     return f_dict

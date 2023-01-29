@@ -105,13 +105,13 @@ for f in fileList:
     # indices = extract_indices_from_log(f)
     fileName.append(str(f.split("-")[1]))
 
-print(fileName)
+print(f'Total Log Files: {len(fileName)}')
 dates_list = []
 for idx in range(0, len(jsonIndices)):
     if jsonIndices[idx]['id'] == args.id:
         dates_list.append(jsonIndices[idx]['day'])
 
-print(f"List of days: {dates_list}")
+# print(f"List of days: {dates_list}")
 
 # adding the list of log files as day to datafile
 for i in set(fileName):
@@ -132,7 +132,7 @@ for i in set(fileName):
             "pedestrian": {"total": 0, "timestamp": []}
              })
 
-print(f"{len(jsonIndices)}")
+# print(f"{len(jsonIndices)}")
 
 # appending the indices in the logfiles to datafile
 for index_counter in tqdm(range(0, len(jsonIndices))):
