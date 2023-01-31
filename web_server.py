@@ -31,7 +31,7 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.json',]
 app.config['UPLOAD_PATH'] = 'assets/uploads/'
 path = 'data/data/cam_test/alerts'
-excluded_list = ['1003 1004-nonAI', '1005-nonAI', ]
+excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1073', '2062']
 
 """
 # For Server

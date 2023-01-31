@@ -5,7 +5,7 @@ import json
 from tqdm import tqdm
 
 def add_drivers_to_json(main_data_folder, json_file_path):
-    excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1002', '1057']
+    excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1002', '1057', '1073', '2062']
     driver_ids = os.listdir(main_data_folder)
     with open(json_file_path) as json_file:
         stats = json.load(json_file)
@@ -39,7 +39,7 @@ def add_drivers_to_json(main_data_folder, json_file_path):
                 stats[-1]['data'].append({"date": date, "files": {}})
             del dates
 
-    print(stats)
+    # print(stats)
     with open(json_file_path, 'w') as json_f:
         json.dump(stats, json_f)
 
