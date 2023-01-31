@@ -63,7 +63,7 @@ def extract_indices_from_log(file):
 def get_list_of_days():
     days_list = {}
     days = []
-    for i, d in enumerate(data['data'][:500]):
+    for i, d in enumerate(data['data']):
         if d['id'] in days_list.keys():
             days_list[d['id']].append(d['day'])
         elif d['id'] not in days_list.keys():
