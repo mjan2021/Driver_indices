@@ -257,9 +257,10 @@ def timestamp():
     """
     # Empty Cache Directory
 
-    video_cache = os.listdir(app.static_folder)
+    # video_cache = os.listdir(app.static_folder)
+    video_cache = os.listdir(video_playback)
     for file in video_cache:
-        os.remove(os.path.join(app.static_folder, file))
+        os.remove(os.path.join(video_playback, file))
 
     print(f'Cache Cleared...')
 
