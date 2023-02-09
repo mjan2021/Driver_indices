@@ -219,7 +219,7 @@ def upload_files():
     print(f'File Uploaded to : {excel_path} as {str(uploaded_file.filename.split(".")[0])+".xlsx"}')
     to_dataframe.to_excel(os.path.join(excel_path, str(uploaded_file.filename.split('.')[0])+".xlsx"))
 
-    return ''
+    return send_file(f"assets/uploads/convertedExcel/{str(uploaded_file.filename.split('.')[0])}.xlsx", as_attachment=True)
 
 
 @app.route('/download_excel')
