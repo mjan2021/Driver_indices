@@ -4,26 +4,12 @@ import metaData
 import json
 from tqdm import tqdm
 
+# 1057 was removed from Excluded list and 1082 was added
 def add_drivers_to_json(main_data_folder, json_file_path):
-    excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1002', '1057', '1073', '2062']
+    excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1002', '1073', '2062', '1082']
     driver_ids = os.listdir(main_data_folder)
     with open(json_file_path) as json_file:
         stats = json.load(json_file)
-
-    # for id in driver_ids:
-    #     if id not in excluded_list:
-    #         print(f"Processing driver: {id}")
-    #         stats.append({'driver_id': id, "data": []})
-    #         for idx in range(0, len(stats)):
-    #             # if stats[idx]['driver_id'] == id:
-    #             #     # stats.append({'driver_id': id, "data": []})
-    #             dates = glob.glob('Z:/VIDEOS/' + id + '/Video/*')
-    #             for date in dates:
-    #                 # print(f"Processing Date: {date}")
-    #                 date = date.split('\\')[-1]
-    #                 stats[idx]['data'].append({"date": date, "files": {}})
-    #             del dates
-    #
 
     for id in range(0, len(driver_ids)):
         if driver_ids[id] not in excluded_list:
@@ -39,7 +25,7 @@ def add_drivers_to_json(main_data_folder, json_file_path):
                 stats[-1]['data'].append({"date": date, "files": {}})
             del dates
 
-    # print(stats)
+    # Open Json file and dump stats 
     with open(json_file_path, 'w') as json_f:
         json.dump(stats, json_f)
 
@@ -47,6 +33,7 @@ def add_drivers_to_json(main_data_folder, json_file_path):
 
 def filling_driver_dates(path, json_file):
 
+    # Get all the files from both cameras
     driver_camera_files = glob.glob(path + '/*/Video/**/*000.asf')
     front_camera_files = glob.glob(path + '/*/Video/**/*100.asf')
 
@@ -55,6 +42,7 @@ def filling_driver_dates(path, json_file):
         stats = json.load(stats_file)
     print(f"Total Drivers: {len(stats)}")
 
+    # combine both lists
     combined_list = driver_camera_files + front_camera_files
     print(f"Total Files: {len(combined_list)}, DMS: {len(driver_camera_files)}, ADAS: {len(front_camera_files)}")
     for idx in tqdm(range(0, len(combined_list))):
@@ -75,8 +63,11 @@ def filling_driver_dates(path, json_file):
                         stats[driver_idx]['data'][date_idx]['files'][file] = size / 1048576
 
     print(f"Total Driver: {len(stats)}")
+    
     with open(json_file, 'w') as json_f:
         json.dump(stats, json_f)
+        
+        
     return "Data processed...."
 
 

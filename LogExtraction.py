@@ -20,6 +20,9 @@ driverID = args.id
 # create a function that take string path of excel file and read it as dataframe
 
 
+
+# temporary solution to write the indices to a new file
+
 def extract_indices_from_log(file):
     """
     Description: Extract indices from the log files
@@ -86,7 +89,7 @@ def update_duration(path):
 
     return None - duration are appended to the JSON datafile
     """
-    print(f"Getting total durations by day...")
+    print("Getting total durations by day...")
     duration = metaData.get_duration(path)
     for iterator in range(0, len(jsonIndices)):
         for index_duration in duration.keys():
@@ -177,6 +180,7 @@ data = {"data": jsonIndices}
 # Writing the indices to the json file
 with open(args.ifile, 'w') as jsonfile:
     json.dump(data, jsonfile)
+
 
 print(f"Length : {len(jsonIndices)}")
 print(f"Files with Errors -> {error_files_list}")

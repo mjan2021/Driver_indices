@@ -4,6 +4,8 @@ import json
 import PIL
 import time
 import tqdm
+import glob
+
 # path = 'data/data/cam_test/alerts'
 path = 'C:/Users/tanve/Downloads/Research_Data/14072021/827000'
 
@@ -76,8 +78,12 @@ def get_duration(path):
         for f in fileList:
             p = os.path.join(directory, f)
             metas = get_meta(p)
-            if metas['duration'] < 10000:
-                dur += int(metas['duration'])
+            try:
+                if metas['duration'] < 10000:
+                    dur += int(metas['duration'])
+            except:
+                dur += 0
+                print(f'get_duration()::Error During Processing: {f}')
         dir_split = "".join(directory.split("\\")[-1].split("-"))
         print(f'Processing : {counter}/{total_fileList}, File: {dir_split}')
         counter += 1
@@ -85,7 +91,29 @@ def get_duration(path):
     # print(f"Total File: {len(f_list)}")
     return f_dict
 
-
+def get_duration_modified(path):
+    f_dict = {}
+    # Glob - getting list of files
+    counter = 0
+    total_fileList = len(glob.glob(path+'**/*000.asf'))
+    
+    for file in glob.glob(path+'**/*000.asf'):
+        dur = 0
+        file = file.replace('\\', '/')
+        metas = get_meta(file)
+        try:
+            if metas['duration'] < 10000:
+                dur += int(metas['duration'])
+        except:
+            # dur += 0
+            print(f'get_duration()::Error During Processing: {file}')
+        dir_split = "".join(file.split("/")[-1].split("-"))
+        print(f'Processing : {counter}/{total_fileList}, File: {dir_split}')
+        counter += 1
+        f_dict[dir_split] = dur
+    
+    return f_dict
+        
 def get_meta(path):
 
     # path = os.path.join(path, file)
