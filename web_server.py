@@ -1,5 +1,6 @@
 import argparse
 import datetime
+from datetime import datetime as dt
 import os
 import cv2
 import json
@@ -7,7 +8,7 @@ import glob
 import imghdr
 import pandas as pd
 from jinja2 import defaults
-from pandas.io.json import json_normalize
+from pandas.io.json import _normalize as json_normalize
 import metaData
 import urllib.request
 from tqdm import tqdm
@@ -26,12 +27,12 @@ Flask App defaults
 # Server Video Address
 # this can't be modified with function parameter
 # app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
-app = Flask(__name__, static_folder='Z:/VideoPlayback')
+app = Flask(__name__, static_folder='Y:/VideoPlayback')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.json',]
 app.config['UPLOAD_PATH'] = 'assets/uploads/'
 path = 'data/data/cam_test/alerts'
-excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1073', '2062']
+excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1073', '2062', '1082']
 
 """
 # For Server
@@ -77,10 +78,10 @@ def too_large(e):
     return "File is too large...", 413
 
 
-# @app.errorhandler(404)
-# def notFound(e):
-#     print(f"{e}")
-#     return render_template('index.html')
+@app.errorhandler(404)
+def notFound(e):
+    print(f"{e}")
+    return "NotFoundError"
 
 
 @app.route('/db')
@@ -160,50 +161,53 @@ def statistics():
 
 @app.route('/')
 def db():
-    # print(f"Page visited")
-    with open('Datafiles/storage_stats.json') as json_file:
-        data_file = json.load(json_file)
-    labels, dataset = [], []
-    start_end_date = {}
-    total_storage = 0
+    try:
+            
+        # print(f"Page visited")
+        with open('Datafiles/storage_stats.json') as json_file:
+            data_file = json.load(json_file)
+        labels, dataset = [], []
+        start_end_date = {}
+        total_storage = 0
 
-    for idx in tqdm(range(0, len(data_file))):
-        total = 0
-        data = data_file[idx]['data']
-        for idx_files in range(0, len(data)):
-            files = data_file[idx]['data'][idx_files]['files']
-            for all_file in files.values():
-                total += all_file
-        labels.append(data_file[idx]['driver_id'])
-        dataset.append(int(total))
-        total_storage += total
+        for idx in tqdm(range(0, len(data_file))):
+            total = 0
+            data = data_file[idx]['data']
+            for idx_files in range(0, len(data)):
+                files = data_file[idx]['data'][idx_files]['files']
+                for all_file in files.values():
+                    total += all_file
+            labels.append(data_file[idx]['driver_id'])
+            dataset.append(int(total))
+            total_storage += total
 
-    total_drivers = os.listdir(videos_url)
-    hours = get_driving_hours('data_storage.json')
-    # print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    # print(f" Hours: {hours}")
-    for count in total_drivers:
-        if count not in excluded_list:
-            min_max = metaData.min_max_date(count, videos_url)
-            start_end_date[count] = min_max
+        total_drivers = os.listdir(videos_url)
+        hours = get_driving_hours('data_storage.json')
+        # print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+        # print(f" Hours: {hours}")
+        for count in total_drivers:
+            if count not in excluded_list:
+                min_max = metaData.min_max_date(count, videos_url)
+                start_end_date[count] = min_max
 
-    # print(f"Min_Max: {start_end_date}")
+        # print(f"Min_Max: {start_end_date}")
 
-    # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
-    list_of_zero_value_drivers = []
-    for key, value in hours.items():
-        if 0 in value:
-            list_of_zero_value_drivers.append(key)
+        # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+        list_of_zero_value_drivers = []
+        for key, value in hours.items():
+            if 0 in value:
+                list_of_zero_value_drivers.append(key)
 
-    print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
-    for item in list_of_zero_value_drivers:
-        hours.pop(item, None)
+        print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+        for item in list_of_zero_value_drivers:
+            hours.pop(item, None)
 
-    # print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                           total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
-
+        # print(f"{hours}")
+        Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+        return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+    except Exception as e:
+        return f"Oops! Something went wrong..... \n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -331,7 +335,7 @@ def check_validated_status(id, date, col, timestamp):
             return True
             
     # Check if the indice exists in discarded.json
-    for idx, val in enumerate(validated['data']):
+    for idx, val in enumerate(discard['data']):
         if val['id'] == id and val['day'] == date and timestamp in val[col].timestamp:
             return True
     
@@ -495,6 +499,17 @@ def discarded_data():
 
     return redirect('/db')
 
+def date_difference_filter(date_str1, date_str2, format='%Y%m%d'):
+    date1 = dt.strptime(str(date_str1), format).date()
+    date2 = dt.strptime(str(date_str2), format).date()
+    difference = (date2 - date1).days
+    return difference
+
+@app.route('/charts')
+def charts():
+    with open('data_storage.json', 'r') as json_file:
+        data = json.load(json_file)
+    return render_template('charts.html', data=data['data'])
 
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
@@ -502,12 +517,14 @@ if __name__ == '__main__':
     args = argsparser.parse_args()
 
     if args.type == 'local':
-        videos_url = 'Z:/VIDEOS'
-        video_playback = 'Z:/VideoPlayback/'
+        videos_url = 'Y:/VIDEOS'
+        video_playback = 'Y:/VideoPlayback/'
 
     elif args.type == 'server':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
     app.config["TEMPLATES_AUTO_RELOAD"] = True
-    app.run(debug=True)
+    
+app.jinja_env.filters['date_difference'] = date_difference_filter
+app.run(debug=True)
