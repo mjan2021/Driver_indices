@@ -17,6 +17,16 @@ filePath = args.logfolder
 driverID = args.id
 # driverID = "1213"
 
+# ============================================================= #
+
+# Checking Paths:
+if os.path.exists(args.ifile) or os.path.exists(args.logfolder) or os.path.exists(args.vfolder):
+    pass
+else:
+    print("Line 25 >> Check Paths, one or more paths are incorrect")
+    exit()
+    
+# ============================================================= #
 # create a function that take string path of excel file and read it as dataframe
 
 
