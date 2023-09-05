@@ -162,12 +162,14 @@ def indices_to_json(id, day, key, value):
 
 
 def min_max_date(driver_id, url):
-    # dateList = []
+    """
+    This gets the minimu date and maximum date for a driver_id folder
+    """
     min_value, max_value = 0, 0
     # path = videos_url+driver_id+'/Video/'
     path = url +'/'+driver_id + '/Video/'
     list_of_dates = os.listdir(path)
-    if list_of_dates != None:
+    if len(list_of_dates) > 0: 
         int_list = [int("".join(date.split('-'))) for date in list_of_dates]
         print(f"metaData::min_max_date(): {driver_id}")
         min_value, max_value = min(int_list), max(int_list)
