@@ -2,6 +2,7 @@
 *.iml
 
 /venv/*
+/env/*
 arff_data.arff
 csv_data.csv
 script.sh

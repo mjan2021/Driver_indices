@@ -31,17 +31,19 @@
     <div class="card">
       <div class="card-body">
 {#       <canvas id="myChart_2" width="200" height="200"></canvas>#}
-         <table class="table table-sm table-responsive-md">
+         <table class="table table-sm table-responsive-md" style="width:100%;overflow:auto; max-height:100px;">
               <tr>
                 <th>Driver Id</th>
                 <th>Start Date</th>
                 <th>Until Date</th>
+                <th>Days</th>
               </tr>
              {% for key, value in start_end_date.items() %}
               <tr>
                 <td>{{ key }}</td>
                 <td>{{ value[0]}}</td>
                 <td>{{ value[1] }}</td>
+                <td>{{ value[0] | date_difference(value[1])}}</td>
               </tr>
              {% endfor %}
           </table>

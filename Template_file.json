@@ -46,6 +46,53 @@
         "total": 0,
         "timestamp": []
       }
+    },
+    {
+      "id": "1001",
+      "day": "20210921",
+      "duration": 39.76,
+      "yawn": {
+        "total": 0,
+        "timestamp": []
+      },
+      "smoking": {
+        "total": 1,
+        "timestamp": [
+          "20210921103001"
+        ]
+      },
+      "mobilephone": {
+        "total": 0,
+        "timestamp": []
+      },
+      "distraction": {
+        "total": 0,
+        "timestamp": []
+      },
+      "eyeclosing": {
+        "total": 0,
+        "timestamp": []
+      },
+      "crossinglane": {
+        "total": 0,
+        "timestamp": []
+      },
+      "nearcollision": {
+        "total": 0,
+        "timestamp": []
+      },
+      "stopsign": {
+        "total": 0,
+        "timestamp": []
+      },
+      "redlight": {
+        "total": 0,
+        "timestamp": []
+      },
+      "pedestrian": {
+        "total": 0,
+        "timestamp": []
+      }
     }
   ]
 }

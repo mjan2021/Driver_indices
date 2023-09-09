@@ -1,3 +1,7 @@
+import argparse
+import datetime
+from datetime import datetime as dt
+import os
 import cv2
 import os
 import json
@@ -6,6 +10,9 @@ import imghdr
 import argparse
 import datetime
 import pandas as pd
+from jinja2 import defaults
+from pandas.io.json import _normalize as json_normalize
+import metaData
 import urllib.request
 from tqdm import tqdm
 from jinja2 import defaults
@@ -28,7 +35,7 @@ Flask App defaults
 # Server Video Address
 # this can't be modified with function parameter
 # app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
-app = Flask(__name__, static_folder='Z:/VideoPlayback')
+app = Flask(__name__, static_folder='Y:/VideoPlayback')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.json',]
 app.config['UPLOAD_PATH'] = 'assets/uploads/'
@@ -79,10 +86,10 @@ def too_large(e):
     return "File is too large...", 413
 
 
-# @app.errorhandler(404)
-# def notFound(e):
-#     print(f"{e}")
-#     return render_template('index.html')
+@app.errorhandler(404)
+def notFound(e):
+    print(f"{e}")
+    return "NotFoundError"
 
 
 @app.route('/db')
@@ -160,6 +167,8 @@ def statistics():
 
 @app.route('/')
 def db():
+    # try:
+            
     # print(f"Page visited")
     try:
         print()
@@ -181,16 +190,16 @@ def db():
             dataset.append(int(total))
             total_storage += total
 
-        total_drivers = os.listdir(videos_url)
-        hours = get_driving_hours('data_storage.json')
-        # print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-        # print(f" Hours: {hours}")
-        for count in total_drivers:
-            if count not in excluded_list:
-                min_max = metaData.min_max_date(count, videos_url)
-                start_end_date[count] = min_max
+    total_drivers = os.listdir(videos_url)
+    hours = get_driving_hours('data_storage.json')
+    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+    # print(f" Hours: {hours}")
+    for count in total_drivers:
+        if count not in excluded_list:
+            min_max = metaData.min_max_date(count, videos_url)
+            start_end_date[count] = min_max
 
-        # print(f"Min_Max: {start_end_date}")
+    print(f"Min_Max: {start_end_date}")
 
         # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
         list_of_zero_value_drivers = []
@@ -202,12 +211,12 @@ def db():
         for item in list_of_zero_value_drivers:
             hours.pop(item, None)
 
-        # print(f"{hours}")
-        Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-        return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
-    except Exception as e:
-        return render_template('default.html', e=e)
+    print(f"{hours}")
+    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+                        total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+    # except Exception as e:
+    #     return f"Oops! Something went wrong..... /n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -336,7 +345,7 @@ def check_validated_status(id, date, col, timestamp):
             return True
             
     # Check if the indice exists in discarded.json
-    for idx, val in enumerate(validated['data']):
+    for idx, val in enumerate(discard['data']):
         if val['id'] == id and val['day'] == date and timestamp in val[col].timestamp:
             return True
     
@@ -503,92 +512,22 @@ def discarded_data():
 
     return redirect('/db')
 
-@app.route('/search', methods=['POST', "GET"])
-def search_videos():
-    folder = 'C:/Users/tanve/PycharmProjects/FAUDD/data/Sample_data'
-    participant_ids = os.listdir(folder)
-    
-    
-    return render_template('search.html', ids=participant_ids)
+def date_difference_filter(date_str1, date_str2, format='%Y%m%d'):
+    try:
+        date1 = dt.strptime(str(date_str1), format).date()
+        date2 = dt.strptime(str(date_str2), format).date()
+        difference = (date2 - date1).days
+    except Exception as e:
+        print(f"date_difference_filter(): {e}")
+        difference = 0
+        
+    return difference
 
 @app.route('/charts')
 def charts():
     with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
-    
-    
-        
-        
-    
-    
-    
-    return render_template('charts.html')
-
-@app.route('/display-search-video', methods=['POST', 'GET'])
-def display_search_video():
-    """
-    Extract part of video based on the timestamp of the indice
-    :return: render_template
-    """
-    # return 'display search video'
-    # Empty Cache Directory
-
-    # video_cache = os.listdir(app.static_folder)
-    video_cache = os.listdir(video_playback)
-    for file in video_cache:
-        os.remove(os.path.join(video_playback, file))
-
-    print('Cache Cleared...')
-
-    time = request.args.get('input-time')  # indice timestamp
-    id = request.args.get('select-id')  # driver id
-    date = request.args.get('input-date')  # column name
-    playback_path = video_playback
-    print(f"URL Arguments >> Time: {time}, Date : {date} ")
-    
-    driver = videos_url + '/' + id + '/Video/**/*000.asf'
-    front = videos_url + '/' + id + '/Video/**/*100.asf'  # Hard coded path - make sure it exist
-    driver_files = glob.glob(driver, recursive=True)  # list of video for selected driver from driver facing camera
-    front_files = glob.glob(front, recursive=True)  # list of videos for selected driver from front facing camera
-    differences_list = {}
-    
-    # Cleaning the naming convention for files
-    for idx in range(0, len(driver_files)):
-        file_path = driver_files[idx].replace('\\', '/')
-        cleanup_date = "".join(file_path.split('/')[-2].split('-'))
-        cleanup_filename = file_path.split('/')[-1].split('.')[0][1:7]
-    
-        # matching date of indice with the folder date
-        if cleanup_date == date:
-    
-            # matching Time of the indice with file name
-            if int(cleanup_filename) < int(time):
-                d = int(time) - int(cleanup_filename)
-                differences_list[int(idx)] = d
-
-    selected = min(differences_list.items(), key= lambda x:x[1])
-    file_time = driver_files[selected[0]].replace('\\', '/')
-    file_time_clean = file_time.split('/')[-1].split('.')[0][1:7]
-    file_formated = datetime.datetime.strptime(file_time_clean, '%H%M%S').time()
-    time_formated = datetime.datetime.strptime(time, '%H%M%S').time()
-    minutes_diff = time_formated.minute - file_formated.minute
-    seconds_diff = time_formated.second - file_formated.second
-    total_diff = (minutes_diff * 60) + seconds_diff
-
-    print(f"Difference (Seconds) : {total_diff}")
-    clip = VideoFileClip(driver_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
-    clip_front = VideoFileClip(front_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
-
-    clipped_video_folder = os.listdir(video_playback)
-    clip.write_videofile(video_playback+'search_test.mp4', fps=30, audio=False)
-    clip_front.write_videofile(video_playback+'search_test_front.mp4', fps=30, audio=False)
-
-    print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
-    filename = glob.glob(playback_path+'*')
-
-    return render_template('display_search_video', data=[filename])
-
-
+    return render_template('charts.html', data=data['data'])
 
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
@@ -596,12 +535,14 @@ if __name__ == '__main__':
     args = argsparser.parse_args()
 
     if args.type == 'local':
-        videos_url = 'Z:/VIDEOS'
-        video_playback = 'Z:/VideoPlayback/'
+        videos_url = 'Y:/VIDEOS'
+        video_playback = 'Y:/VideoPlayback/'
 
     elif args.type == 'server':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
     app.config["TEMPLATES_AUTO_RELOAD"] = True
-    app.run(debug=True)
+    
+app.jinja_env.filters['date_difference'] = date_difference_filter
+app.run(debug=True)
