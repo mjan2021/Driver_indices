@@ -169,8 +169,10 @@ def min_max_date(driver_id, url):
     list_of_dates = os.listdir(path)
     if list_of_dates != None:
         int_list = [int("".join(date.split('-'))) for date in list_of_dates]
-        print(driver_id)
+        # print(f"driver_id: {driver_id}, length: {len(int_list)}")
         min_value, max_value = min(int_list), max(int_list)
+    else:
+        print(f"Driver ID: {driver_id} has no data")
     # min_value, max_value = min(dateList), max(dateList)
     return [min_value, max_value]
 
