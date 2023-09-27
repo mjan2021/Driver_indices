@@ -190,18 +190,19 @@ def db():
             dataset.append(int(total))
             total_storage += total
 
-    total_drivers = os.listdir(videos_url)
-    hours = get_driving_hours('data_storage.json')
-    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    # print(f" Hours: {hours}")
-    for count in total_drivers:
-        if count not in excluded_list:
-            min_max = metaData.min_max_date(count, videos_url)
-            start_end_date[count] = min_max
+    
+        total_drivers = os.listdir(videos_url)
+        hours = get_driving_hours('data_storage.json')
+        print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+        # print(f" Hours: {hours}")
+        for count in total_drivers:
+            if count not in excluded_list:
+                min_max = metaData.min_max_date(count, videos_url)
+                start_end_date[count] = min_max
 
-    print(f"Min_Max: {start_end_date}")
-
-        # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+        print(f"Min_Max: {start_end_date}")
+        
+            # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
         list_of_zero_value_drivers = []
         for key, value in hours.items():
             if 0 in value:
@@ -211,12 +212,12 @@ def db():
         for item in list_of_zero_value_drivers:
             hours.pop(item, None)
 
-    print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                        total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
-    # except Exception as e:
-    #     return f"Oops! Something went wrong..... /n{e}"
+        print(f"{hours}")
+        Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+        return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+    except Exception as e:
+        return f"Oops! Something went wrong..... /n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
