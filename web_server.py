@@ -18,7 +18,7 @@ from tqdm import tqdm
 from jinja2 import defaults
 from moviepy.editor import *
 from flask import Flask, flash
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 from werkzeug.utils import secure_filename
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
 from markupsafe import escape
@@ -162,7 +162,7 @@ def statistics():
                 datafile[id][2] += round(size, 2)
     # print(datafile)
 
-    return render_template('statistics.html', files=datafile)
+    return render_template('Statistics.html', files=datafile)
 
 
 @app.route('/')
@@ -190,33 +190,38 @@ def db():
         dataset.append(int(total))
         total_storage += total
 
-    total_drivers = os.listdir(videos_url)
-    hours = get_driving_hours('data_storage.json')
-    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    # print(f" Hours: {hours}")
-    for count in total_drivers:
-        if count not in excluded_list:
-            min_max = metaData.min_max_date(count, videos_url)
-            start_end_date[count] = min_max
+        # if item is not a directory then it will be not added to the list
+        total_drivers = []
+        for folder in os.listdir(videos_url):
+           if os.path.isdir(os.path.join(videos_url, folder)):
+               total_drivers.append(folder)
+        
+        hours = get_driving_hours('data_storage.json')
+        print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+        # print(f" Hours: {hours}")
+        for count in total_drivers:
+            if count not in excluded_list:
+                min_max = metaData.min_max_date(count, videos_url)
+                start_end_date[count] = min_max
 
-    print(f"Min_Max: {start_end_date}")
-
-    # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
-    list_of_zero_value_drivers = []
-    for key, value in hours.items():
-        if 0 in value:
-            list_of_zero_value_drivers.append(key)
+        print(f"Min_Max: {start_end_date}")
+        
+            # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+        list_of_zero_value_drivers = []
+        for key, value in hours.items():
+            if 0 in value:
+                list_of_zero_value_drivers.append(key)
 
     print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
     for item in list_of_zero_value_drivers:
         hours.pop(item, None)
 
-    print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                    total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
-    # except Exception as e:
-    #     return f"Oops! Something went wrong..... /n{e}"
+        print(f"{hours}")
+        Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+        return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+    except Exception as e:
+        return f"Oops! Something went wrong..... /n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -535,9 +540,12 @@ if __name__ == '__main__':
     args = argsparser.parse_args()
 
     if args.type == 'local':
-        videos_url = 'Y:/VIDEOS'
-        video_playback = 'Y:/VideoPlayback/'
-
+        if os.name == 'nt':
+            videos_url = 'Y:/VIDEOS'
+            video_playback = 'Y:/VideoPlayback/'
+        else:
+            videos_url = '/Volumes/ivsdccoa/VIDEOS'
+            video_playback = '/Volumes/ivsdccoa/VideoPlayback/'
     elif args.type == 'server':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
@@ -545,4 +553,5 @@ if __name__ == '__main__':
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     
 app.jinja_env.filters['date_difference'] = date_difference_filter
-app.run(debug=True)
+#app.run(debug=True)
+app.run(host='0.0.0.0', port=5001, debug=True)

@@ -51,8 +51,8 @@
         </select>
     </div>
     
-    <div class="container-fluid">
-        <div class="row">
+<!--
+       <div class="row">
             <div class="col col-4 chart-container">
                 <canvas id="yawnChart"></canvas>
             </div>
@@ -85,6 +85,45 @@
             </div>
         </div>
     </div>
+-->
+
+   <div class="container-fluid">
+
+       <div class="row">
+           <canvas id="yawnChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="mobilephoneChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="distractionChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="eyeclosingChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="smokingChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="crossinglanesChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="nearcollisionChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="pedestrianChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="redlightChart"></canvas>
+        </div>
+        <div class="row">
+            <canvas id="stopsignChart"></canvas>
+        </div>
+    </div>
+</div>
+
+
+
 
     <script>
         var ctxYawn = document.getElementById('yawnChart').getContext('2d');
@@ -145,6 +184,11 @@
                     }]
                 },
                 options: {
+                    elements: {
+                        line: {
+                            tension: 0.4
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true
