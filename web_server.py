@@ -170,25 +170,25 @@ def db():
     # try:
             
     # print(f"Page visited")
-    try:
-        print()
-    
-        with open('Datafiles/storage_stats.json') as json_file:
-            data_file = json.load(json_file)
-        labels, dataset = [], []
-        start_end_date = {}
-        total_storage = 0
+    # try:
+    print()
 
-        for idx in tqdm(range(0, len(data_file))):
-            total = 0
-            data = data_file[idx]['data']
-            for idx_files in range(0, len(data)):
-                files = data_file[idx]['data'][idx_files]['files']
-                for all_file in files.values():
-                    total += all_file
-            labels.append(data_file[idx]['driver_id'])
-            dataset.append(int(total))
-            total_storage += total
+    with open('Datafiles/storage_stats.json') as json_file:
+        data_file = json.load(json_file)
+    labels, dataset = [], []
+    start_end_date = {}
+    total_storage = 0
+
+    for idx in tqdm(range(0, len(data_file))):
+        total = 0
+        data = data_file[idx]['data']
+        for idx_files in range(0, len(data)):
+            files = data_file[idx]['data'][idx_files]['files']
+            for all_file in files.values():
+                total += all_file
+        labels.append(data_file[idx]['driver_id'])
+        dataset.append(int(total))
+        total_storage += total
 
     total_drivers = os.listdir(videos_url)
     hours = get_driving_hours('data_storage.json')
@@ -201,20 +201,20 @@ def db():
 
     print(f"Min_Max: {start_end_date}")
 
-        # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
-        list_of_zero_value_drivers = []
-        for key, value in hours.items():
-            if 0 in value:
-                list_of_zero_value_drivers.append(key)
+    # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+    list_of_zero_value_drivers = []
+    for key, value in hours.items():
+        if 0 in value:
+            list_of_zero_value_drivers.append(key)
 
-        print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
-        for item in list_of_zero_value_drivers:
-            hours.pop(item, None)
+    print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+    for item in list_of_zero_value_drivers:
+        hours.pop(item, None)
 
     print(f"{hours}")
     Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                        total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+                    total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
     # except Exception as e:
     #     return f"Oops! Something went wrong..... /n{e}"
 
