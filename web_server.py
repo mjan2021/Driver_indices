@@ -532,7 +532,7 @@ def date_difference_filter(date_str1, date_str2, format='%Y%m%d'):
 def charts():
     with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
-    return render_template('charts.html', data=data['data'])
+    return render_template('visualize.html', data=data['data'])
 
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
