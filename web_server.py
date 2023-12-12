@@ -1,5 +1,6 @@
 import os
 import cv2
+import os
 import json
 import glob
 import imghdr
@@ -17,6 +18,9 @@ from datetime import datetime as dt
 from werkzeug.utils import secure_filename
 from pandas.io.json import _normalize as json_normalize
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
+from markupsafe import escape
+
+import metaData
 
 """
 Flask App defaults
@@ -94,8 +98,7 @@ def notFound(e):
 @app.route('/db')
 def display():
     with open('data_storage.json', 'r') as json_file:
-        data = json.load(json_file)
-     
+        data = json.load(json_file)     
     return render_template('index.html', data=data)
 
 # data-tabel ajax call to get the data from json file
@@ -104,7 +107,6 @@ def ajax():
     with open('data_storage.json') as file:
         data = json.load(file)
     return data
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -171,50 +173,54 @@ def db():
     # try:
             
     # print(f"Page visited")
-    with open('Datafiles/storage_stats.json') as json_file:
-        data_file = json.load(json_file)
-    labels, dataset = [], []
-    start_end_date = {}
-    total_storage = 0
+    try:
+        print()
+    
+        with open('Datafiles/storage_stats.json') as json_file:
+            data_file = json.load(json_file)
+        labels, dataset = [], []
+        start_end_date = {}
+        total_storage = 0
 
-    for idx in tqdm(range(0, len(data_file))):
-        total = 0
-        data = data_file[idx]['data']
-        for idx_files in range(0, len(data)):
-            files = data_file[idx]['data'][idx_files]['files']
-            for all_file in files.values():
-                total += all_file
-        labels.append(data_file[idx]['driver_id'])
-        dataset.append(int(total))
-        total_storage += total
+        for idx in tqdm(range(0, len(data_file))):
+            total = 0
+            data = data_file[idx]['data']
+            for idx_files in range(0, len(data)):
+                files = data_file[idx]['data'][idx_files]['files']
+                for all_file in files.values():
+                    total += all_file
+            labels.append(data_file[idx]['driver_id'])
+            dataset.append(int(total))
+            total_storage += total
 
-    total_drivers = os.listdir(videos_url)
-    hours = get_driving_hours('data_storage.json')
-    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    # print(f" Hours: {hours}")
-    for count in total_drivers:
-        if count not in excluded_list:
-            min_max = metaData.min_max_date(count, videos_url)
-            start_end_date[count] = min_max
+    
+        total_drivers = os.listdir(videos_url)
+        hours = get_driving_hours('data_storage.json')
+        print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+        # print(f" Hours: {hours}")
+        for count in total_drivers:
+            if count not in excluded_list:
+                min_max = metaData.min_max_date(count, videos_url)
+                start_end_date[count] = min_max
 
-    print(f"Min_Max: {start_end_date}")
+        print(f"Min_Max: {start_end_date}")
+        
+            # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+        list_of_zero_value_drivers = []
+        for key, value in hours.items():
+            if 0 in value:
+                list_of_zero_value_drivers.append(key)
 
-    # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
-    list_of_zero_value_drivers = []
-    for key, value in hours.items():
-        if 0 in value:
-            list_of_zero_value_drivers.append(key)
+        print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+        for item in list_of_zero_value_drivers:
+            hours.pop(item, None)
 
-    print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
-    for item in list_of_zero_value_drivers:
-        hours.pop(item, None)
-
-    print(f"{hours}")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                        total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
-    # except Exception as e:
-    #     return f"Oops! Something went wrong..... /n{e}"
+        print(f"{hours}")
+        Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+        return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
+    except Exception as e:
+        return f"Oops! Something went wrong..... /n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -323,7 +329,8 @@ def timestamp():
     print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
     filename = glob.glob(playback_path+'*')
 
-    validated = check_validated_status(id, date, col, ts)
+    # validated = check_validated_status(id, date, col, ts)
+    validated= []
     return render_template('display.html', data=[filename], col=col, id=id, ts=ts, validation=validated)
 
 # this is called in display.html to check status of validated/discard buttons
@@ -355,6 +362,9 @@ def validation_indices():
 
 @app.route('/valid')
 def valid():
+    """
+    This is used for data vlidation and add seprate json file for validated data
+    """
     col = str(request.args.get('col'))
     ts = str(request.args.get('ts'))
     id = str(request.args.get('id'))
