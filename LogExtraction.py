@@ -192,6 +192,9 @@ with open(args.ifile, 'w') as jsonfile:
     json.dump(data, jsonfile)
 
 
+with open('temp.log', 'a+') as temp:
+    temp.write(f'{args.id}, indices: {len(jsonIndices)}')
+    temp.write('\n')
 print(f"Length : {len(jsonIndices)}")
 print(f"Files with Errors -> {error_files_list}")
 

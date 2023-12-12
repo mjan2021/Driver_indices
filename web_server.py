@@ -1,20 +1,21 @@
-import argparse
-import datetime
-from datetime import datetime as dt
 import os
 import cv2
 import json
 import glob
 import imghdr
-import pandas as pd
-from jinja2 import defaults
-from pandas.io.json import _normalize as json_normalize
+import jsonify
 import metaData
+import datetime
+import argparse
+import pandas as pd
 import urllib.request
 from tqdm import tqdm
+from jinja2 import defaults
 from moviepy.editor import *
 from flask import Flask, flash
+from datetime import datetime as dt
 from werkzeug.utils import secure_filename
+from pandas.io.json import _normalize as json_normalize
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
 
 """
@@ -71,6 +72,12 @@ def get_driving_hours(jsonfile):
             dr_hours[id][1] += round(duration / 60)  # hours
     return dr_hours
 
+@app.route('/api')
+def api():
+    data = jsonify(pd.read_csv('data_storage.json'))
+    
+    
+    return "data.keys()"
 
 @app.errorhandler(413)
 def too_large(e):

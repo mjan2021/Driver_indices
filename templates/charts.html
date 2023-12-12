@@ -141,10 +141,13 @@
                         label: `# of ${activityName} Activity`,
                         data: values,
                         borderWidth: 2,
-                        fill: false
+                        fill: false,
                     }]
                 },
                 options: {
+                    elements: {
+                            line: {tension : 0.4},
+                        },
                     scales: {
                         y: {
                             beginAtZero: true
