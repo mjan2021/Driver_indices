@@ -170,7 +170,8 @@ def min_max_date(driver_id, url):
     path = url +'/'+driver_id + '/Video/'
     list_of_dates = os.listdir(path)
     if len(list_of_dates) > 0: 
-        int_list = [int("".join(date.split('-'))) for date in list_of_dates]
+        # .DS_Store: handlign MacOS created files error
+        int_list = [int("".join(date.split('-'))) for date in list_of_dates if date != '.DS_Store']
         print(f"metaData::min_max_date(): {driver_id}")
         min_value, max_value = min(int_list), max(int_list)
     else:

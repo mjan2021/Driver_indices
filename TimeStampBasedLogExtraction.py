@@ -18,9 +18,10 @@ def extract_indices_from_log(filePath,file):
     # alarmsTimeStamp = {'alarm_type 5': [], 'alarm_type 4': [], 'alarm_type 3': [], 'alarm_type 1': [], 'alarm_type 2': [], 'alarm_type 17': [], 'alarm_type 18': [], 'alarm_type 27':[], 'alarm_type 16':[], 'alarm_type 9':[], 'alarm_type 7': [] }
     
     error_files = []
-    print(f"Processing debug file {filePath+file}")
-    with open(os.path.join(filePath, file), 'r') as logFile:
-        lines = logFile.read().splitlines()
+    # print(f"Processing debug file {filePath+file}")
+    with open(os.path.join(filePath, file), 'r', encoding='utf-8', errors='ignore') as logFile:
+        # lines = logFile.read().splitlines()
+        lines = logFile.readlines()
         for line in lines:
             words = line.split(" ")
             """
@@ -61,22 +62,23 @@ mapping = {'NOBODY': 0,
 
 print(f'Number of drivers: {len(ids)}\nIDs: {ids}')
 for each_driver in tqdm(ids):
+    
     logFolder = f'{root}/{each_driver}/Disk_files/debug/'
-    # print(logFolder)
-    for logfile in os.listdir(logFolder):
-        # print(f'file: {logfile}')
-        driverid = each_driver
-        if logfile.endswith('.log'):
-            alarmdict, alarmtimestamp, err = extract_indices_from_log(logFolder, logfile)
-            for key, value in alarmtimestamp.items():
-                for ts in value:
-                    if key != 'NOBODY':
-                        id = driverid
-                        alarm_type = key
-                        date = ts[:9]
-                        
-                        transform_dict = {'id': id, 'date': date, 'timestamp': ts, 'type': mapping[alarm_type]}
-                        jsonfile.append(transform_dict)
+    if os.path.exists(logFolder):
+        for logfile in os.listdir(logFolder):
+            # print(f'file: {logfile}')
+            driverid = each_driver
+            if logfile.endswith('.log'):
+                alarmdict, alarmtimestamp, err = extract_indices_from_log(logFolder, logfile)
+                for key, value in alarmtimestamp.items():
+                    for ts in value:
+                        if key != 'NOBODY':
+                            id = driverid
+                            alarm_type = key
+                            date = ts[:9]
+                            
+                            transform_dict = {'id': id, 'date': date, 'timestamp': ts, 'type': mapping[alarm_type]}
+                            jsonfile.append(transform_dict)
 
 with open('./Datafiles/Timestamps_data_Dec23.json', 'w') as jsonf:
     json.dump(jsonfile, jsonf)

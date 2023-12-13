@@ -6,7 +6,7 @@ import glob
 import imghdr
 import jsonify
 import metaData
-import datetime
+from datetime import datetime
 import argparse
 import pandas as pd
 import urllib.request
@@ -14,6 +14,7 @@ from tqdm import tqdm
 from jinja2 import defaults
 from moviepy.editor import *
 from flask import Flask, flash
+import flask
 from datetime import datetime as dt
 from werkzeug.utils import secure_filename
 from pandas.io.json import _normalize as json_normalize
@@ -193,38 +194,40 @@ def db():
         dataset.append(int(total))
         total_storage += total
 
-        # if item is not a directory then it will be not added to the list
-        total_drivers = []
-        for folder in os.listdir(videos_url):
-           if os.path.isdir(os.path.join(videos_url, folder)):
-               total_drivers.append(folder)
+    # if item is not a directory then it will be not added to the list
+    total_drivers = []
+    for folder in os.listdir(videos_url):
+        if os.path.isdir(os.path.join(videos_url, folder)):
+            total_drivers.append(folder)
+    
+    hours = get_driving_hours('data_storage.json')
+    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+    # print(f" Hours: {hours}")
         
-        hours = get_driving_hours('data_storage.json')
-        print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-        # print(f" Hours: {hours}")
-        for count in total_drivers:
-            if count not in excluded_list:
-                min_max = metaData.min_max_date(count, videos_url)
-                start_end_date[count] = min_max
+    for count in total_drivers:
+        if count not in excluded_list:
+            min_max = metaData.min_max_date(count, videos_url)
+            start_end_date[count] = min_max
 
-        print(f"Min_Max: {start_end_date}")
-        
-            # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
-        list_of_zero_value_drivers = []
-        for key, value in hours.items():
-            if 0 in value:
-                list_of_zero_value_drivers.append(key)
+    print(f"Min_Max: {start_end_date}")
+    
+        # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+    list_of_zero_value_drivers = []
+    for key, value in hours.items():
+        if 0 in value:
+            list_of_zero_value_drivers.append(key)
 
     print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+    
     for item in list_of_zero_value_drivers:
         hours.pop(item, None)
 
-        print(f"{hours}")
+        # print(f"{hours}")
         Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
         return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
                             total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
-    except Exception as e:
-        return f"Oops! Something went wrong..... /n{e}"
+    # except Exception as e:
+    #     return f"Oops! Something went wrong..... /n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -536,6 +539,107 @@ def charts():
     with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
     return render_template('visualize.html', data=data['data'])
+
+@app.route('/search')
+def search_aggregrated_data():
+    data = ''
+    
+    
+    
+    return render_template('get_aggregate_data.html', data=data)
+
+# def search_and_aggregate(data, start_datetime, end_datetime, target_id=None):
+#     result = {}
+
+#     # mapping = {'NOBODY': 0, 'LOOKING_DOWN': 1, 'SMOKING': 2, 'CALLING': 3, 'LDW': 5, 
+#     #            'EYE_CLOSED': 4, 'LDW_R': 5, 'LDW_L': 5, 'FCW': 6, 'camera cover!': 0, 'infrared block!': 0}
+
+#     mapping = {'NOBODY': 0, 'distraction': 1, 'SMOKING': 2, 'phone': 3, 'lane-change': 5, 
+#                'EYE_CLOSED': 4, 'near-collison': 6, 'camera cover!': 0, 'infrared block!': 0}
+#     # Invert the mapping dictionary
+#     inverted_mapping = {v: k for k, v in mapping.items()}
+
+#     start_datetime = datetime.fromisoformat(start_datetime)
+#     end_datetime = datetime.fromisoformat(end_datetime)
+    
+#     print(f'{start_datetime}, {end_datetime}, {type(start_datetime)}, {type(end_datetime)}')
+    
+#     for entry in data:
+#         entry_datetime = datetime.strptime(entry["timestamp"], "%Y%m%d%H%M%S")
+
+#         # Check if the entry is within the specified date and time range
+#         if start_datetime <= entry_datetime <= end_datetime:
+#             # Check if the entry matches the target ID if specified
+#             if target_id is None or entry["id"] == target_id:
+#                 entry_type = entry["type"]
+                
+#                 # Map the entry_type to the mapped value from the inverted mapping
+#                 mapped_type = inverted_mapping.get(entry_type, entry_type)
+                
+#                 result[mapped_type] = result.get(mapped_type, 0) + 1
+
+#     return result
+
+# @app.route('/aggregate', methods=['GET'])
+# def aggregate():
+#     print(f'Aggregate Called...')
+#     try:
+#         with open("./Datafiles/Timestamps_data_Dec23.json", "r") as json_file:
+#             data_str = json_file.read()
+#         data = json.loads(data_str)
+
+#         target_id = request.args.get('target_id')
+#         start_datetime = request.args.get('start_datetime')
+#         end_datetime = request.args.get('end_datetime')
+        
+#         print(f'{start_datetime}, {end_datetime}, {type(start_datetime)}, {type(end_datetime)}')
+
+#         result = search_and_aggregate(data, start_datetime, end_datetime, target_id)
+
+#         return flask.jsonify(result)
+#     except Exception as e:
+#         return flask.jsonify({'error': str(e)})
+
+def search_and_aggregate(data, start_datetime, end_datetime, target_id=None):
+    result = {}
+
+    start_datetime = datetime.strptime(start_datetime, "%Y-%m-%dT%H:%M")
+    end_datetime = datetime.strptime(end_datetime, "%Y-%m-%dT%H:%M")
+
+    for entry in data["data"]:
+        entry_day = entry["day"]
+        entry_datetime = datetime.strptime(entry_day, "%Y%m%d")
+
+        # Check if the entry is within the specified date and time range
+        if start_datetime <= entry_datetime <= end_datetime:
+            # Check if the entry matches the target ID if specified
+            if target_id is None or entry["id"] == target_id:
+                for event_type, event_data in entry.items():
+                    if event_type not in ["id", "day", "duration"]:
+                        result[event_type] = result.get(event_type, 0) + event_data["total"]
+
+    return result
+
+@app.route('/aggregate', methods=['GET'])
+def aggregate():
+    try:
+        with open('data_storage.json', 'r') as json_file:
+            data_str = json_file.read()
+            
+        # Replace this with your actual data
+        # data_str = '{"data": [{"id": "1001", "day": "20210920", "duration": 35.86, "yawn": {"total": 0, "timestamp": []}, "smoking": {"total": 1, "timestamp": ["20210920103721"]}, "mobilephone": {"total": 0, "timestamp": []}, "distraction": {"total": 0, "timestamp": []}, "eyeclosing": {"total": 0, "timestamp": []}, "crossinglane": {"total": 0, "timestamp": []}, "nearcollision": {"total": 0, "timestamp": []}, "stopsign": {"total": 0, "timestamp": []}, "redlight": {"total": 0, "timestamp": []}, "pedestrian": {"total": 0, "timestamp": []}}, {"id": "1001", "day": "20210921", "duration": 39.76, "yawn": {"total": 0, "timestamp": []}, "smoking": {"total": 1, "timestamp": ["20210921103001"]}, "mobilephone": {"total": 0, "timestamp": []}, "distraction": {"total": 0, "timestamp": []}, "eyeclosing": {"total": 0, "timestamp": []}, "crossinglane": {"total": 0, "timestamp": []}, "nearcollision": {"total": 0, "timestamp": []}, "stopsign": {"total": 0, "timestamp": []}, "redlight": {"total": 0, "timestamp": []}, "pedestrian": {"total": 0, "timestamp": []}}]}'
+        data = json.loads(data_str)
+
+        target_id = request.args.get('target_id')
+        start_datetime = request.args.get('start_datetime')
+        end_datetime = request.args.get('end_datetime')
+
+        result = search_and_aggregate(data, start_datetime, end_datetime, target_id)
+
+        return flask.jsonify(result)
+    except Exception as e:
+        return flask.jsonify({'error': str(e)})
+
 
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
