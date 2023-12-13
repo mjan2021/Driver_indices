@@ -165,7 +165,7 @@ def statistics():
                 datafile[id][2] += round(size, 2)
     # print(datafile)
 
-    return render_template('statistics.html', files=datafile)
+    return render_template('Statistics.html', files=datafile)
 
 
 @app.route('/')
@@ -173,28 +173,32 @@ def db():
     # try:
             
     # print(f"Page visited")
-    try:
-        print()
-    
-        with open('Datafiles/storage_stats.json') as json_file:
-            data_file = json.load(json_file)
-        labels, dataset = [], []
-        start_end_date = {}
-        total_storage = 0
+    # try:
+    print()
 
-        for idx in tqdm(range(0, len(data_file))):
-            total = 0
-            data = data_file[idx]['data']
-            for idx_files in range(0, len(data)):
-                files = data_file[idx]['data'][idx_files]['files']
-                for all_file in files.values():
-                    total += all_file
-            labels.append(data_file[idx]['driver_id'])
-            dataset.append(int(total))
-            total_storage += total
+    with open('Datafiles/storage_stats.json') as json_file:
+        data_file = json.load(json_file)
+    labels, dataset = [], []
+    start_end_date = {}
+    total_storage = 0
 
-    
-        total_drivers = os.listdir(videos_url)
+    for idx in tqdm(range(0, len(data_file))):
+        total = 0
+        data = data_file[idx]['data']
+        for idx_files in range(0, len(data)):
+            files = data_file[idx]['data'][idx_files]['files']
+            for all_file in files.values():
+                total += all_file
+        labels.append(data_file[idx]['driver_id'])
+        dataset.append(int(total))
+        total_storage += total
+
+        # if item is not a directory then it will be not added to the list
+        total_drivers = []
+        for folder in os.listdir(videos_url):
+           if os.path.isdir(os.path.join(videos_url, folder)):
+               total_drivers.append(folder)
+        
         hours = get_driving_hours('data_storage.json')
         print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
         # print(f" Hours: {hours}")
@@ -211,9 +215,9 @@ def db():
             if 0 in value:
                 list_of_zero_value_drivers.append(key)
 
-        print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
-        for item in list_of_zero_value_drivers:
-            hours.pop(item, None)
+    print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+    for item in list_of_zero_value_drivers:
+        hours.pop(item, None)
 
         print(f"{hours}")
         Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
@@ -531,7 +535,7 @@ def date_difference_filter(date_str1, date_str2, format='%Y%m%d'):
 def charts():
     with open('data_storage.json', 'r') as json_file:
         data = json.load(json_file)
-    return render_template('charts.html', data=data['data'])
+    return render_template('visualize.html', data=data['data'])
 
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
@@ -539,9 +543,12 @@ if __name__ == '__main__':
     args = argsparser.parse_args()
 
     if args.type == 'local':
-        videos_url = 'Y:/VIDEOS'
-        video_playback = 'Y:/VideoPlayback/'
-
+        if os.name == 'nt':
+            videos_url = 'Y:/VIDEOS'
+            video_playback = 'Y:/VideoPlayback/'
+        else:
+            videos_url = '/Volumes/ivsdccoa/VIDEOS'
+            video_playback = '/Volumes/ivsdccoa/VideoPlayback/'
     elif args.type == 'server':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
@@ -549,4 +556,5 @@ if __name__ == '__main__':
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     
 app.jinja_env.filters['date_difference'] = date_difference_filter
-app.run(debug=True)
+#app.run(debug=True)
+app.run(host='0.0.0.0', port=5001, debug=True)
