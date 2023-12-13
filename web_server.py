@@ -4,11 +4,11 @@ import os
 import json
 import glob
 import imghdr
-import jsonify
+# import jsonify
 import metaData
 from datetime import datetime
 import argparse
-import pandas as pd
+# import pandas as pd
 import urllib.request
 from tqdm import tqdm
 from jinja2 import defaults
@@ -17,7 +17,7 @@ from flask import Flask, flash
 import flask
 from datetime import datetime as dt
 from werkzeug.utils import secure_filename
-from pandas.io.json import _normalize as json_normalize
+# from pandas.io.json import _normalize as json_normalize
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
 from markupsafe import escape
 
