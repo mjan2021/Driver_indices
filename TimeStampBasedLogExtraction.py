@@ -7,6 +7,10 @@ from tqdm import tqdm
 import datetime
 import pandas as pd
 
+if os.name == 'nt':
+    root = 'Y:/VIDEOS'
+elif os.name == 'posix':
+    root = '/Volumes/ivsdccoa/VIDEOS'
 def extract_indices_from_log(filePath,file):
     alarmsDict = {'NOBODY': 0, 'LOOKING_DOWN': 0, 'SMOKING': 0, 'CALLING':0, 'LDW': 0, 'EYE_CLOSED': 0, 'LDW_R': 0, 'LDW_L':0, 'FCW':0, 'camera cover!':0, 'infrared block!': 0 }
     alarmsTimeStamp = {'NOBODY': [], 'LOOKING_DOWN': [], 'SMOKING': [], 'CALLING':[], 'LDW': [], 'EYE_CLOSED': [], 'LDW_R': [], 'LDW_L':[], 'FCW':[], 'camera cover!':[], 'infrared block!': [] }
@@ -14,7 +18,7 @@ def extract_indices_from_log(filePath,file):
     # alarmsTimeStamp = {'alarm_type 5': [], 'alarm_type 4': [], 'alarm_type 3': [], 'alarm_type 1': [], 'alarm_type 2': [], 'alarm_type 17': [], 'alarm_type 18': [], 'alarm_type 27':[], 'alarm_type 16':[], 'alarm_type 9':[], 'alarm_type 7': [] }
     
     error_files = []
-    # print(f"Processing debug file {file}")
+    print(f"Processing debug file {filePath+file}")
     with open(os.path.join(filePath, file), 'r') as logFile:
         lines = logFile.read().splitlines()
         for line in lines:
@@ -38,7 +42,7 @@ def extract_indices_from_log(filePath,file):
 
 excluded_list = ['1003 1004','1031 1017','1011 1012','1043 1044','1013 1014','1003 1004-nonAI', '1005-nonAI', '1073', '2062']
 ids = []
-for item in os.listdir('Z:/VIDEOS/'):
+for item in os.listdir(root):
     if item not in excluded_list:
         ids.append(item)
 
@@ -54,25 +58,27 @@ mapping = {'NOBODY': 0,
            'FCW':6, 
            'camera cover!':0, 
            'infrared block!': 0 }
-    
-for each_driver in tqdm(ids):
-    logFolder = f'Z:/VIDEOS/{each_driver}/Disk_files/debug/'
-    for logfile in os.listdir(logFolder):
-        driverid = logFolder.split('/')[2]
-        
-        # if logfile.endswith('.log'):
-        alarmdict, alarmtimestamp, err = extract_indices_from_log(logFolder, logfile)
-        for key, value in alarmtimestamp.items():
-            for ts in value:
-                if key != 'NOBODY':
-                    id = driverid
-                    alarm_type = key
-                    date = ts[:9]
-                    
-                    transform_dict = {'id': id, 'date': date, 'timestamp': ts, 'type': mapping[alarm_type]}
-                    jsonfile.append(transform_dict)
 
-with open('./Datafiles/Timestamps_data.json', 'w') as jsonf:
+print(f'Number of drivers: {len(ids)}\nIDs: {ids}')
+for each_driver in tqdm(ids):
+    logFolder = f'{root}/{each_driver}/Disk_files/debug/'
+    # print(logFolder)
+    for logfile in os.listdir(logFolder):
+        # print(f'file: {logfile}')
+        driverid = each_driver
+        if logfile.endswith('.log'):
+            alarmdict, alarmtimestamp, err = extract_indices_from_log(logFolder, logfile)
+            for key, value in alarmtimestamp.items():
+                for ts in value:
+                    if key != 'NOBODY':
+                        id = driverid
+                        alarm_type = key
+                        date = ts[:9]
+                        
+                        transform_dict = {'id': id, 'date': date, 'timestamp': ts, 'type': mapping[alarm_type]}
+                        jsonfile.append(transform_dict)
+
+with open('./Datafiles/Timestamps_data_Dec23.json', 'w') as jsonf:
     json.dump(jsonfile, jsonf)
     
         
