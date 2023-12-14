@@ -3,8 +3,7 @@ import json
 from datetime import datetime
 
 
-mapping = {'NOBODY': 0, 'LOOKING_DOWN': 1, 'SMOKING': 2, 'CALLING': 3, 'LDW': 5, 
-               'EYE_CLOSED': 4, 'LDW_R': 5, 'LDW_L': 5, 'FCW': 6, 'camera cover!': 0, 'infrared block!': 0}
+mapping = {'NOBODY': 0, 'LOOKING_DOWN': 1, 'SMOKING': 2, 'CALLING': 3, 'LDW': 5, 'EYE_CLOSED': 4, 'LDW_R': 5, 'LDW_L': 5, 'FCW': 6, 'camera cover!': 0, 'infrared block!': 0}
 
 #  Invert the mapping dictionary
 inverted_mapping = {v: k for k, v in mapping.items()}

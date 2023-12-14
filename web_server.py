@@ -635,8 +635,9 @@ def aggregate():
         end_datetime = request.args.get('end_datetime')
 
         result = search_and_aggregate(data, start_datetime, end_datetime, target_id)
-
+        print(f"Result: {flask.jsonify(result)}")
         return flask.jsonify(result)
+        
     except Exception as e:
         return flask.jsonify({'error': str(e)})
 

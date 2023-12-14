@@ -73,14 +73,16 @@
             const start_datetime = document.getElementById("start_datetime").value;
             const end_datetime = document.getElementById("end_datetime").value;
             
-            console.log(start_datetime);
+            
             // Make an AJAX request to the Flask app
+            //const url = `http://131.91.174.21:5001/aggregate?target_id=${target_id}&start_datetime=${start_datetime}&end_datetime=${end_datetime}`; -->
             const url = `http://127.0.0.1:5001/aggregate?target_id=${target_id}&start_datetime=${start_datetime}&end_datetime=${end_datetime}`;
 
             fetch(url)
             .then(response => response.json())
             .then(data => {
                 // Display the result on the page
+                console.log(data);
                 document.getElementById("result").innerHTML = JSON.stringify(data, null, 2);
             })
             .catch(error => {
