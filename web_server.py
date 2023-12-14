@@ -548,58 +548,6 @@ def search_aggregrated_data():
     
     return render_template('get_aggregate_data.html', data=data)
 
-# def search_and_aggregate(data, start_datetime, end_datetime, target_id=None):
-#     result = {}
-
-#     # mapping = {'NOBODY': 0, 'LOOKING_DOWN': 1, 'SMOKING': 2, 'CALLING': 3, 'LDW': 5, 
-#     #            'EYE_CLOSED': 4, 'LDW_R': 5, 'LDW_L': 5, 'FCW': 6, 'camera cover!': 0, 'infrared block!': 0}
-
-#     mapping = {'NOBODY': 0, 'distraction': 1, 'SMOKING': 2, 'phone': 3, 'lane-change': 5, 
-#                'EYE_CLOSED': 4, 'near-collison': 6, 'camera cover!': 0, 'infrared block!': 0}
-#     # Invert the mapping dictionary
-#     inverted_mapping = {v: k for k, v in mapping.items()}
-
-#     start_datetime = datetime.fromisoformat(start_datetime)
-#     end_datetime = datetime.fromisoformat(end_datetime)
-    
-#     print(f'{start_datetime}, {end_datetime}, {type(start_datetime)}, {type(end_datetime)}')
-    
-#     for entry in data:
-#         entry_datetime = datetime.strptime(entry["timestamp"], "%Y%m%d%H%M%S")
-
-#         # Check if the entry is within the specified date and time range
-#         if start_datetime <= entry_datetime <= end_datetime:
-#             # Check if the entry matches the target ID if specified
-#             if target_id is None or entry["id"] == target_id:
-#                 entry_type = entry["type"]
-                
-#                 # Map the entry_type to the mapped value from the inverted mapping
-#                 mapped_type = inverted_mapping.get(entry_type, entry_type)
-                
-#                 result[mapped_type] = result.get(mapped_type, 0) + 1
-
-#     return result
-
-# @app.route('/aggregate', methods=['GET'])
-# def aggregate():
-#     print(f'Aggregate Called...')
-#     try:
-#         with open("./Datafiles/Timestamps_data_Dec23.json", "r") as json_file:
-#             data_str = json_file.read()
-#         data = json.loads(data_str)
-
-#         target_id = request.args.get('target_id')
-#         start_datetime = request.args.get('start_datetime')
-#         end_datetime = request.args.get('end_datetime')
-        
-#         print(f'{start_datetime}, {end_datetime}, {type(start_datetime)}, {type(end_datetime)}')
-
-#         result = search_and_aggregate(data, start_datetime, end_datetime, target_id)
-
-#         return flask.jsonify(result)
-#     except Exception as e:
-#         return flask.jsonify({'error': str(e)})
-
 def search_and_aggregate(data, start_datetime, end_datetime, target_id=None):
     result = {}
 
