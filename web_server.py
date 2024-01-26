@@ -20,7 +20,7 @@ from werkzeug.utils import secure_filename
 # from pandas.io.json import _normalize as json_normalize
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
 from markupsafe import escape
-
+import pandas as pd
 import metaData
 
 """
@@ -589,7 +589,84 @@ def aggregate():
     except Exception as e:
         return flask.jsonify({'error': str(e)})
 
+@app.route('/merge')
+def merge_page():
+    return render_template('merge.html')
+@app.route('/merge', methods=['POST'])
+def merge_data():
+    uploaded_file = request.files['file']
+    telematics_temp = pd.read_excel(uploaded_file.filename)
+    # Conversion of formatted timestamps in json file 
+    telematics_temp['trip start'] = pd.to_datetime(telematics_temp['trip start'])
+    telematics_temp['trip end'] = pd.to_datetime(telematics_temp['trip end'])
 
+    # Convert to the desired format
+    telematics_temp['trip start formatted'] = telematics_temp['trip start'].apply(lambda x: x.strftime('%Y%m%d%H%M%S'))
+    telematics_temp['trip end formatted'] = telematics_temp['trip end'].apply(lambda x: x.strftime('%Y%m%d%H%M%S'))
+
+    # Convert Video data to timestamp based
+    video_temp = flatten_json_timestamps('./data_storage.json')
+    
+    # save the files as csv
+    telematics_temp.to_csv('telematics_temp.csv', index=False)
+    video_temp.to_csv('video_temp.csv', index=False)
+    
+    # Read the csv files
+    telematics_data = pd.read_csv('telematics_temp.csv')
+    video_data = pd.read_csv('video_temp.csv')
+    
+    # Merge DataFrames based on timestamp
+    merged_data = pd.merge(telematics_data, video_data, left_on="trip start formatted", right_on="timestamp", how="left")
+
+    # Apply the function to create a new column in telematic_data
+    telematics_data['count_per_type'] = telematics_data.apply(check_interval, args=[video_data], axis=1)
+
+    # Expand the dictionary into separate columns
+    count_per_type_df = telematics_data['count_per_type'].apply(pd.Series)
+
+    # Merge the expanded data back to the original telematic DataFrame
+    final_data = pd.concat([telematics_data, count_per_type_df], axis=1)
+
+    # Drop the original 'count_per_type' column if needed
+    final_data = final_data.drop('count_per_type', axis=1)
+
+    # Fill NaN values with 0
+    final_data = final_data.fillna(0)
+
+    # Print or use the final DataFrame as needed
+    final_data.to_csv('merged_data_dropper.csv', index=False)
+    
+    print(f'merge_data(): Data merged successfully')
+    # return the file as a download
+    return send_file('./merged_data_dropper.csv', as_attachment=True)
+    
+    
+# Create a function to check if a timestamp is within a given interval
+def check_interval(row, video_data):
+        total = video_data[(video_data['id'] == row['PID']) & (video_data['timestamp'] >= row['trip start formatted']) & (video_data['timestamp'] <= row['trip end formatted'])]
+        return total['type'].value_counts().to_dict()
+
+
+def flatten_json_timestamps(json_file):
+    with open(json_file) as f:
+        data = json.load(f)
+
+    flat_data = []
+
+    for entry in data['data']:
+        id_value = entry["id"]
+        day = entry["day"]
+        for key, value in entry.items():
+            if key not in ["id", "day", "duration"]:
+                if isinstance(value, dict):
+                    total = value["total"]
+                    timestamps = value["timestamp"]
+                    for timestamp in timestamps:
+                        flat_data.append({"id": id_value, "day": day, "type": key, "timestamp": timestamp})
+
+    df = pd.DataFrame(flat_data)
+    return df
+    
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
     argsparser.add_argument('--type', help='server or local')

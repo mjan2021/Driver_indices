@@ -1,1 +1,0 @@
-id,day,type,timestamp,PID,trip start,trip end,travel_time,dist_per_trip,n_ACC,n_BRK,n_HTURN,speed_mean,speed_sd,speed_max,rpm_mean,rpm_sd,rpm_max,acc_value,brk_value,hturn_value,egl_mean,egl_sd,egl_max,air_mean,air_sd,air_max,fuel_mean,fuel_sd,fuel_max,thro_mean,thro_sd,thro_max,trip start formatted,trip end formatted,count_per_type
