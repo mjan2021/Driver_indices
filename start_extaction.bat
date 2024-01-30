@@ -8,7 +8,7 @@ rem Set the Python script path
 set "python_script=.\LogExtraction.py"
 
 rem Set the JSON file path
-set "json_file=data_storage_test.json"
+set "json_file=data_storage.json"
 
 rem Set the base video folder path
 set "base_video_folder=Y:\VIDEOS"
