@@ -117,7 +117,21 @@ def gender_detection_without_face_detection(path):
       
       
 
+
+
+  
 ID = '1003_1004'
+all_processed_file = []
+# read the list of files
+with open(f'./gender_split/gender_{ID}.txt', 'r') as status_file:
+  list_of_lines = status_file.readlines()
+  for line in list_of_lines:
+    all_processed_file.append(line.split(',')[0])
+  
+# print(all_processed_file)  
+# if '/Volumes/ivsdccoa/VIDEOS/1003_1004/Video/2022-11-20/T054305000000.asf' in all_processed_file:
+#   print("File already processed")
+# exit()
 
 video_files_directory = f'Y:/VIDEOS/{ID}/Video/'
 if os.name =='posix':
@@ -131,7 +145,10 @@ for file in tqdm(list_of_files): #Change 0:1000
   print(file)
   try:
     # g = gender_detection(file)
-    g = gender_detection_without_face_detection(file)
+    if file in all_processed_file:
+      print(f"File already processed")
+    else:
+      g = gender_detection_without_face_detection(file)
   except Exception as e:
     print(f"Error.. {file} with Exception => {e}")
     continue
