@@ -12,7 +12,8 @@ while cap.isOpened():
   ret, frame = cap.read()
   if ret:
     obj = DeepFace.analyze(img_path = frame, actions=['gender'], enforce_detection=False)
-    print(obj)
+    
+    
 
 # obj = DeepFace.analyze(img_path = "./assets/gender.JPEG", actions=['gender'])
 
