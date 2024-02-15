@@ -98,7 +98,9 @@ def gender_detection_without_face_detection(path):
   cap = cv2.VideoCapture(path)
   gender = {'male':0, 'female':0}
   counter = 0
-  
+  total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+  if total_frames < 0:
+    return None
   # print(f'gender_detection_without_face_detection(): Processing Frames...')
   while cap.isOpened():
     ret, frame = cap.read()
@@ -120,15 +122,16 @@ def gender_detection_without_face_detection(path):
 
 
   
-ID = '1003_1004'
+ID = '1134_1135'
 all_processed_file = []
 # read the list of files
-with open(f'./gender_split/gender_{ID}.txt', 'r') as status_file:
-  list_of_lines = status_file.readlines()
-  for line in list_of_lines:
-    all_processed_file.append(line.split(',')[0])
+if os.path.exists(f'./gender_split/gender_{ID}.txt'):
+  with open(f'./gender_split/gender_{ID}.txt', 'r') as status_file:
+    list_of_lines = status_file.readlines()
+    for line in list_of_lines:
+      all_processed_file.append(line.split(',')[0])
   
-# print(all_processed_file)  
+print(f'Total Files Processed: {len(all_processed_file)}')  
 # if '/Volumes/ivsdccoa/VIDEOS/1003_1004/Video/2022-11-20/T054305000000.asf' in all_processed_file:
 #   print("File already processed")
 # exit()
@@ -141,35 +144,40 @@ list_of_files = glob.glob(video_files_directory+'**/*000.asf')
 print(f"Total Videos: {len(list_of_files)}")
 driver_gender = {}
 for file in tqdm(list_of_files): #Change 0:1000
+  skip = False
   file = '/'.join(file.split("\\"))
   print(file)
   try:
     # g = gender_detection(file)
     if file in all_processed_file:
       print(f"File already processed")
+      skip = True
     else:
       g = gender_detection_without_face_detection(file)
+      
   except Exception as e:
     print(f"Error.. {file} with Exception => {e}")
     continue
   
-  print(f"Driver_Gender (last-item): {g}")
-  # if g == None:
+  # print(f"Driver_Gender (last-item): {g}")
+  # # if g == None:
   #   driver_gender[file] = "None"
   # else:
   #   driver_gender[file] = max(g, key=g.get)
   
       
   # print(f"Driver_Gender: {driver_gender}")
-  with open(f'./gender_split/gender_{ID}.txt', 'a+') as status_file:
-    # status_file.write(','+str(driver_gender)+']') # use comma before writting the driver_gender
-    if g == None:
-      driver_gender[file] = "None"
-      # status_file.write(f'{file}, None')
-    else:
-      # driver_gender[file] = max(g, key=g.get)
-      status_file.write(f'{file}, {max(g, key=g.get)}')
-    status_file.write('\n')
+  if skip == False:
+    print(f"Driver_Gender (last-item): {g}")
+    with open(f'./gender_split/gender_{ID}.txt', 'a+') as status_file:
+      # status_file.write(','+str(driver_gender)+']') # use comma before writting the driver_gender
+      if g == None:
+        driver_gender[file] = "None"
+        # status_file.write(f'{file}, None')
+      else:
+        # driver_gender[file] = max(g, key=g.get)
+        status_file.write(f'{file}, {max(g, key=g.get)}')
+      status_file.write('\n')
 
 
 ### DETECT THE FILE NAME WHICH HAVE TWO ID AND ONLY RUN THOSE OR MANUALLY RUN THE ONLY FOLDER WITH TWO IDs
