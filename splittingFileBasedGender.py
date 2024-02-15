@@ -28,7 +28,7 @@ def Copy_gender_files_into_seperate_folders(txtfile, participantId, gender, root
 
     # root_folder = 'Z:/VIDEOS/1013 1014/'
     root_folder = rootFolder
-    test_folder = f'Z:/VIDEOS/{participantId}_{gender}/'
+    test_folder = f'Y:/VIDEOS/{participantId}_{gender}/'
     
     print(f'==========Creating seperate directories for participants ====================================================')
     if os.path.exists(test_folder):
