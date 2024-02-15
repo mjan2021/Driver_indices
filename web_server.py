@@ -248,25 +248,29 @@ def upload_files():
 
 @app.route('/download_excel')
 def download_excel():
-    file_path = request.args.get('file')
-    with open(file_path) as f:
-        jsonfile = json.load(f)
-    to_dataframe = json_normalize(jsonfile['data'])
-    to_dataframe.to_excel('assets/uploads/convertedExcel/data_storage.xlsx')
-
-    return send_file('assets/uploads/convertedExcel/data_storage.xlsx', as_attachment=True)
-
+    try:
+        file_path = request.args.get('file')
+        with open(file_path) as f:
+            jsonfile = json.load(f)
+        to_dataframe = json_normalize(jsonfile['data'])
+        to_dataframe.to_excel('assets/uploads/convertedExcel/data_storage.xlsx')
+        return send_file('assets/uploads/convertedExcel/data_storage.xlsx', as_attachment=True)
+    except:
+        return "Resolve the Json_Normalize Error in the Code"
 
 @app.route('/download_csv')
 def download_csv():
-    file_path = request.args.get('file')
-    with open(file_path) as f:
-        jsonfile = json.load(f)
-    to_dataframe = json_normalize(jsonfile['data'])
-    to_dataframe.to_csv('assets/uploads/convertedExcel/data_storage.csv', sep=',', encoding='utf-8')
+    try:
+        file_path = request.args.get('file')
+        with open(file_path) as f:
+            jsonfile = json.load(f)
+        to_dataframe = json_normalize(jsonfile['data'])
+        to_dataframe.to_csv('assets/uploads/convertedExcel/data_storage.csv', sep=',', encoding='utf-8')
 
-    return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
-
+        return send_file('assets/uploads/convertedExcel/data_storage.csv', as_attachment=True)
+    except:
+        return "Resolve the Json_Normalize Error in the Code"
+       
 @app.route('/download_json')
 def download_json():
     file_path = request.args.get('file')
@@ -592,6 +596,7 @@ def aggregate():
 @app.route('/merge')
 def merge_page():
     return render_template('merge.html')
+
 @app.route('/merge', methods=['POST'])
 def merge_data():
     uploaded_file = request.files['file']
