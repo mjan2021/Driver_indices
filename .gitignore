@@ -3,6 +3,7 @@
 
 /venv/*
 /env/*
+/Gender_images/*
 arff_data.arff
 csv_data.csv
 script.sh
