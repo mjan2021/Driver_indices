@@ -105,8 +105,8 @@
   datasets: [{
     label: '',
     data:  [ {% for key, value in hours.items() %}
-  {{ value[1] }},
-  {% endfor %}
+                {{ value[1] }},
+              {% endfor %}
   ],
     backgroundColor: [
                 'rgba(255, 99, 132, 0.7)',
@@ -148,9 +148,9 @@
   datasets: [{
     label: '',
     data: [ {% for key2, value2 in hours.items() %}
-  '{{ value2[0] / value2[1] }}',
-  {% endfor %}
-  ],
+              '{{ value2[0] / value2[1] }}',
+            {% endfor %}
+          ],
     backgroundColor: [
                 'rgba(69,137,164,0.7)'
 

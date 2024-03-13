@@ -222,9 +222,9 @@ def db():
     for item in list_of_zero_value_drivers:
         hours.pop(item, None)
 
-        # print(f"{hours}")
-        Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-        return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+    print(f"<<<<<<<<< \n {hours} \n >>>>>>>>>>")
+    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
                             total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
     # except Exception as e:
     #     return f"Oops! Something went wrong..... /n{e}"
