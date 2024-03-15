@@ -1,10 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import EfficientNetB0
+from tensorflow.keras.applications import EfficientNetB7
+from tensorflow.keras.applications.convnext import ConvNeXtBase
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
+import warnings
+warnings.filterwarnings('ignore')
 # Define parameters
 image_size = (224, 224)
 batch_size = 32
@@ -24,7 +27,7 @@ train_datagen = ImageDataGenerator(
 
 # Load and Split Data
 train_generator = train_datagen.flow_from_directory(
-    'path_to_training_data',
+    './gender_split/image_data/',
     target_size=image_size,
     batch_size=batch_size,
     class_mode='categorical',
@@ -32,7 +35,7 @@ train_generator = train_datagen.flow_from_directory(
 )
 
 validation_generator = train_datagen.flow_from_directory(
-    'path_to_training_data',
+    './gender_split/image_data/',
     target_size=image_size,
     batch_size=batch_size,
     class_mode='categorical',
@@ -40,7 +43,9 @@ validation_generator = train_datagen.flow_from_directory(
 )
 
 # Load EfficientNetB0 base model
-base_model = EfficientNetB0(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+# base_model = EfficientNetB7(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+base_model = ConvNeXtBase(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+base_model.trainable = False
 
 # Add custom classification head
 x = GlobalAveragePooling2D()(base_model.output)
@@ -55,14 +60,14 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # Compile the model
-model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy', metrics=['accuracy',])
 
 # Train the model
 history = model.fit(
     train_generator,
-    epochs=10,
+    epochs=25,
     validation_data=validation_generator
 )
 
 # Save the trained model
-model.save('gender_classification_model.h5')
+model.save('./gender_split/convnext-base.h5')

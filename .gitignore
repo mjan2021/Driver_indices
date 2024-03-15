@@ -9,3 +9,6 @@ csv_data.csv
 script.sh
 test_file.json
 deeplearning-mci
+*/*.h5
+gender_split/*/*.jpg
+gender_split/image_data/*/*.jpg
