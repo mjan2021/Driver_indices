@@ -676,7 +676,7 @@ if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
     argsparser.add_argument('--type', help='server or local')
     args = argsparser.parse_args()
-
+    video_url = ''
     if args.type == 'local':
         if os.name == 'nt':
             videos_url = 'Y:/VIDEOS'
@@ -688,6 +688,7 @@ if __name__ == '__main__':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
 
+    excluded_list.append([f for f in video_url if f.find('male') != -1 or f.find('female') != -1])
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     
 app.jinja_env.filters['date_difference'] = date_difference_filter
