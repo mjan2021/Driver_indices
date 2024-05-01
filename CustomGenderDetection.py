@@ -7,9 +7,47 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.experimental import Adamax, Adadelta, Adagrad, Ftrl, Nadam, RMSprop, SGD
-
+import cv2
 import warnings
 warnings.filterwarnings('ignore')
+
+# Function to detect faces in the right side of an image using OpenCV's pre-trained Haar Cascade classifier
+def detect_right_driver_face(image_path):
+    # Load the image
+    image = cv2.imread(image_path)
+    height, width, _ = image.shape
+
+    # Define ROI for the right side of the image
+    roi_x = int(width / 2)  # Start X from half of the image width
+    roi_y = 0  # Start Y from the top
+    roi_width = int(width / 2)  # Set the width to be half of the image width
+    roi_height = height  # Full height of the image
+
+    # Crop the right side ROI from the image
+    roi = image[roi_y:roi_y+roi_height, roi_x:roi_x+roi_width]
+
+    # Convert ROI to grayscale
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+
+    # Load the pre-trained face detector
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+    # Detect faces in the ROI
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    # Extract faces and their coordinates
+    face_images = []
+    face_coordinates = []
+
+    for (x, y, w, h) in faces:
+        # Convert face coordinates to global image coordinates
+        global_x = x + roi_x
+        global_y = y + roi_y
+        face_coordinates.append((global_x, global_y, w, h))
+        face_images.append(image[global_y:global_y+h, global_x:global_x+w])
+
+    return face_images, face_coordinates
+
 # Define parameters
 image_size = (224, 224)
 batch_size = 32

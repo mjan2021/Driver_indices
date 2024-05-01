@@ -8,11 +8,9 @@ arff_data.arff
 csv_data.csv
 script.sh
 test_file.json
-<<<<<<< HEAD
 /GenderData/*
-=======
 deeplearning-mci
 */*.h5
-gender_split/*/*.jpg
-gender_split/image_data/*/*.jpg
->>>>>>> b4f00305d7b3bddb6ba1ae4ccce6789284e5710b
+/gender_split/*/*.jpg
+/gender_split/image_data/*/*.jpg
+/GenderData/*
