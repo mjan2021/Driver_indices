@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import shutil
-
+import datetime from datetime
 
 # ===========================================
 # For MacOS
@@ -43,24 +43,28 @@ for index, row in filtered_df.iterrows():
     folder = row['Combined'].split('_')[3]
     filename = ".".join(row['Combined'].split('_')[4].split('.')[:-1])
     
+    # this is for copying front-facing video
+    file_front = f'{filename[:-8]}0100.asf'
+    
+    
     if int(ID1) in data[gender]:
         if not os.path.exists(f'{base_directory}{ID1}_{gender}/Video/{folder}'): 
             os.makedirs(f'{base_directory}{ID1}_{gender}/Video/{folder}')
         
-        src = f'{base_directory}{ID}/Video/{folder}/{filename}'
-        dst = f'{base_directory}{ID1}_{gender}/Video/{folder}/{filename}' 
+        src = f'{base_directory}{ID}/Video/{folder}/{file_front}'
+        dst = f'{base_directory}{ID1}_{gender}/Video/{folder}/{file_front}' 
         shutil.copyfile(src, dst)   
-        print(f'{counter}/{total_files} file -> {base_directory}{ID1}_{gender}/Video/{folder}/{filename}')
+        print(f'{counter}/{total_files} file -> {base_directory}{ID1}_{gender}/Video/{folder}/{file_front}')
         
 
     elif int(ID2) in data[gender]:
         if not os.path.exists(f'{base_directory}{ID2}_{gender}/Video/{folder}'): 
             os.makedirs(f'{base_directory}{ID2}_{gender}/Video/{folder}')
         
-        src = f'{base_directory}{ID}/Video/{folder}/{filename}'
-        dst = f'file -> {base_directory}{ID2}_{gender}/Video/{folder}/{filename}'
+        src = f'{base_directory}{ID}/Video/{folder}/{file_front}'
+        dst = f'file -> {base_directory}{ID2}_{gender}/Video/{folder}/{file_front}'
         shutil.copyfile(src, dst)
-        print(f'{counter}/{total_files} file -> {base_directory}{ID2}_{gender}/Video/{folder}/{filename}')
+        print(f'{counter}/{total_files} file -> {base_directory}{ID2}_{gender}/Video/{folder}/{file_front}')
        
     g[gender] += 1
     # counter += 1
