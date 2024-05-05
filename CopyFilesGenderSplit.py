@@ -1,7 +1,44 @@
 import os
-import pandas as pd
+import re
+import cv2
+import glob
 import shutil
-import datetime from datetime
+import pandas as pd
+from datetime import datetime
+
+
+def add_seconds_to_time(time_str, seconds):
+    # Parse time string to datetime object
+    time_obj = datetime.datetime.strptime(time_str, '%H%M%S')
+    # Add seconds
+    time_obj += datetime.timedelta(seconds=seconds)
+    # Format back to time string
+    new_time_str = time_obj.strftime('%H%M%S')
+    return new_time_str
+
+# convert string to time
+def to_time(time_str):
+    return datetime.datetime.strptime(time_str, '%H%M%S').time()
+
+# Function to extract date and time from file paths
+def extract_date_time_from_logs(file_path):
+    file_path = file_path.replace('\\', '/')
+    date = file_path.split('-')[1]
+    time = file_path.split('-')[2].split('.')[0]
+    print(f'Logs => Date: {date}, Time: {time}')
+    return date, time
+
+def extract_date_time_from_videos(file_path):
+    file_path = file_path.replace('\\', '/')
+    date = "".join(file_path.split('/')[-2].split('-'))
+    start_time = file_path.split('/')[-1].split('.')[0][1:5]
+    
+    cap = cv2.VideoCapture(file_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    total_seconds = total_frames / cap.get(cv2.CAP_PROP_FPS)
+    end_time = add_seconds_to_time(start_time, total_seconds)
+    print(f'Video => Date: {date}, start_time: {start_time}, end_time: {end_time}')
+    return date, start_time, end_time
 
 # ===========================================
 # For MacOS
