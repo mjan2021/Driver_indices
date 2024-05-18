@@ -1,7 +1,44 @@
 import os
-import pandas as pd
+import re
+import cv2
+import glob
 import shutil
+import pandas as pd
+from datetime import datetime
 
+
+def add_seconds_to_time(time_str, seconds):
+    # Parse time string to datetime object
+    time_obj = datetime.datetime.strptime(time_str, '%H%M%S')
+    # Add seconds
+    time_obj += datetime.timedelta(seconds=seconds)
+    # Format back to time string
+    new_time_str = time_obj.strftime('%H%M%S')
+    return new_time_str
+
+# convert string to time
+def to_time(time_str):
+    return datetime.datetime.strptime(time_str, '%H%M%S').time()
+
+# Function to extract date and time from file paths
+def extract_date_time_from_logs(file_path):
+    file_path = file_path.replace('\\', '/')
+    date = file_path.split('-')[1]
+    time = file_path.split('-')[2].split('.')[0]
+    print(f'Logs => Date: {date}, Time: {time}')
+    return date, time
+
+def extract_date_time_from_videos(file_path):
+    file_path = file_path.replace('\\', '/')
+    date = "".join(file_path.split('/')[-2].split('-'))
+    start_time = file_path.split('/')[-1].split('.')[0][1:5]
+    
+    cap = cv2.VideoCapture(file_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    total_seconds = total_frames / cap.get(cv2.CAP_PROP_FPS)
+    end_time = add_seconds_to_time(start_time, total_seconds)
+    print(f'Video => Date: {date}, start_time: {start_time}, end_time: {end_time}')
+    return date, start_time, end_time
 
 # ===========================================
 # For MacOS
@@ -45,10 +82,10 @@ for index, row in filtered_df.iterrows():
     ID2 = row['Combined'].split('_')[2]
     folder = row['Combined'].split('_')[3]
     filename = ".".join(row['Combined'].split('_')[4].split('.')[:-1])
+    
+    # this is for copying front-facing video
     file_front = f'{filename[:-8]}0100.asf'
     
-    # if f'{base_directory}{ID}/Video/{folder}/{file_front}\n' not in copiedFilesList:
-    #     print()
     
     if int(ID1) in data[gender]:
         if not os.path.exists(f'{base_directory}{ID1}_{gender}/Video/{folder}'): 

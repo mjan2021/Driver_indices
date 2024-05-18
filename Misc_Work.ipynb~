@@ -51483,8 +51483,13 @@
   },
   {
    "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 1,
+   "id": "5f72d218",
+=======
    "execution_count": null,
    "id": "491ee9ba",
+>>>>>>> 1680158f25aa27b920656ab9627361781cd11995
    "metadata": {},
    "outputs": [
     {
@@ -52876,7 +52881,11 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
+<<<<<<< HEAD
+   "version": "3.10.9"
+=======
    "version": "3.8.8"
+>>>>>>> 1680158f25aa27b920656ab9627361781cd11995
   },
   "vscode": {
    "interpreter": {
