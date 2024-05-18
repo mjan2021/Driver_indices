@@ -84,15 +84,15 @@ def match_logs_to_videos(video_path, log_paths, gender):
 # base_directory = '/Volumes/ivsdccoa/VIDEOS/'
 
 # For Windows
-base_directory = '/Volumes/ivsdccoa/VIDEOS/'
+base_directory = 'Y:/VIDEOS/'
 # ===========================================
 
 juan = pd.read_csv('./GenderFilesSplitted/juan_replaced.csv')
 alex = pd.read_csv('./GenderFilesSplitted/alex.csv')
 tanveer = pd.read_csv('./GenderFilesSplitted/tanveer_replaced.csv')
-
+csv_3500 = pd.read_csv('./GenderFilesSplitted/gender_3500.csv')
 #combine datafranes
-df = pd.concat([juan, alex, tanveer], axis=0)
+df = pd.concat([juan, alex, tanveer, csv_3500], axis=0)
 df['Verifyied'].replace({'f':'female', 'm':'male'}, inplace=True)
 # print(df['Verifyied'].value_counts())
 filtered_df = df[df['Verifyied'].isin(['male', 'female'])]
@@ -110,6 +110,9 @@ print(filtered_df['Verifyied'].value_counts())
 counter = 0
 total_files = len(filtered_df['Combined'])
 g = {'male': 0, 'female': 0}
+copiedFiles = open('copiedFiles.txt', 'w+')
+copiedFilesList = copiedFiles.readlines()
+filesNotFound = open('filesNotFound.txt', 'w+')
 for index, row in filtered_df.iterrows():
     counter +=1
     gender = row['Verifyied']
@@ -127,26 +130,49 @@ for index, row in filtered_df.iterrows():
         if not os.path.exists(f'{base_directory}{ID1}_{gender}/Video/{folder}'): 
             os.makedirs(f'{base_directory}{ID1}_{gender}/Video/{folder}')
         
-        if not os.path.exists(f'{base_directory}{ID1}_{gender}/Disk_files/debug/'):
-            os.makedirs(f'{base_directory}{ID1}_{gender}/Disk_files/debug/') 
+        src = f'{base_directory}{ID}/Video/{folder}/{filename}'
+        dst = f'{base_directory}{ID1}_{gender}/Video/{folder}/{filename}'
+        try:
+            if not os.path.exists(dst):
+                shutil.copyfile(src, dst)
         
-        src = f'{base_directory}{ID}/Video/{folder}/{file_front}'
-        dst = f'{base_directory}{ID1}_{gender}/Video/{folder}/{file_front}' 
-        shutil.copyfile(src, dst)   
-        print(f'{counter}/{total_files} file -> {base_directory}{ID1}_{gender}/Video/{folder}/{file_front}')
-        
-        # perform arranging the logs to the corresponding videos => match_logs_to_videos(src, log_files) in ipynb one
-        # then copy the logs files since they match the videos now => shutil.copyfile(log_file, dst)
-        
+        except Exception as e:
+            if dst+'\n' in copiedFilesList:
+                print(f'========= File Already Copied: ========= ')
+                
+            else: 
+                print(f'========= File Not Found: ========= ')
+                filesNotFound.write(f'{src}\n')
+                continue
+        print(f'{counter}/{total_files} file -> {base_directory}{ID1}_{gender}/Video/{folder}/{filename}')
+        # break
 
     elif int(ID2) in data[gender]:
         if not os.path.exists(f'{base_directory}{ID2}_{gender}/Video/{folder}'): 
             os.makedirs(f'{base_directory}{ID2}_{gender}/Video/{folder}')
         
-        src = f'{base_directory}{ID}/Video/{folder}/{file_front}'
-        dst = f'file -> {base_directory}{ID2}_{gender}/Video/{folder}/{file_front}'
-        shutil.copyfile(src, dst)
-        print(f'{counter}/{total_files} file -> {base_directory}{ID2}_{gender}/Video/{folder}/{file_front}')
-
+        src = f'{base_directory}{ID}/Video/{folder}/{filename}'
+        dst = f'{base_directory}{ID2}_{gender}/Video/{folder}/{filename}'
+        
+        try:
+            if not os.path.exists(dst):
+                shutil.copyfile(src, dst)
+        
+        except Exception as e:
+            if dst+'\n' in copiedFilesList:
+                print(f'========= File Already Copied: ========= ')
+            else:
+                    
+                print(f'========= File Not Found: ========= ')
+                filesNotFound.write(f'{src}\n')
+                continue
+        print(f'{counter}/{total_files} file -> {base_directory}{ID2}_{gender}/Video/{folder}/{filename}')
+        # break
+    if dst+'\n' not in copiedFilesList:
+        copiedFiles.write(f'{dst}\n')
+    
     g[gender] += 1
     # counter += 1
+
+filesNotFound.close()
+copiedFiles.close()
