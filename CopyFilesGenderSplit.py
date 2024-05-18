@@ -40,6 +40,45 @@ def extract_date_time_from_videos(file_path):
     print(f'Video => Date: {date}, start_time: {start_time}, end_time: {end_time}')
     return date, start_time, end_time
 
+# Function to match log entries to corresponding videos
+def match_logs_to_videos(video_path, log_paths, gender):
+    video_date, video_start_time, video_end_time = extract_date_time_from_videos(video_path)
+    for log_path in log_paths:
+        with open(log_path, 'r') as log_file:
+            log_content = log_file.readlines()
+
+        log_date, log_time = extract_date_time_from_logs(log_path)
+        # if not os.path.exists(f'./GenderData/1001_{gender}/debug'):
+        #     os.makedirs(f'./GenderData/1001_{gender}/debug/')
+            
+        output_log = open(f"./GenderData/1001/Seperated_logs/{video_date}-{video_start_time}.log", 'a+')
+        # output_log.write(f'Log file for video {video_path} from log {log_path}')
+        match = False
+        for log_entry in log_content:
+            if log_entry[:1] == '[':
+                    
+                # print(f'log_entry: {log_entry} - date: {video_date}, time: {video_time} ')
+                time_from_log_entry = log_entry.split(']')[0].split('-')[-1]
+                
+                # print(f'======== {time_from_log_entry} ========')
+                
+                # Handle cases where the time is one second off (+/- 1)
+                if str(int(video_start_time) + 1) in log_entry or str(int(video_start_time) - 1) in log_entry:
+                    match = True
+                
+                # if log time is in between video start and end time
+                if to_time(time_from_log_entry) >= to_time(str(int(video_start_time) - 1)) and to_time(time_from_log_entry) <= to_time(str(int(video_start_time) + 1)):
+                    match = True
+                
+                
+                if video_date in log_entry and match == True:
+                    print(f'log_entry: {log_entry} - date: {video_date}, time: {video_start_time} ')
+                    output_log.write(f'{str(log_entry)}')
+                    match = False
+        
+        output_log.close()
+        # print(f"Created log file for video {video_path} from log {log_path}")
+
 # ===========================================
 # For MacOS
 # base_directory = '/Volumes/ivsdccoa/VIDEOS/'
@@ -82,16 +121,22 @@ for index, row in filtered_df.iterrows():
     
     # this is for copying front-facing video
     file_front = f'{filename[:-8]}0100.asf'
-    
+    log_files = [each_log.replace("\\","/") for each_log in glob.glob(f'{base_directory}/{ID}/Disk_files/debug/*.log')]
     
     if int(ID1) in data[gender]:
         if not os.path.exists(f'{base_directory}{ID1}_{gender}/Video/{folder}'): 
             os.makedirs(f'{base_directory}{ID1}_{gender}/Video/{folder}')
         
+        if not os.path.exists(f'{base_directory}{ID1}_{gender}/Disk_files/debug/'):
+            os.makedirs(f'{base_directory}{ID1}_{gender}/Disk_files/debug/') 
+        
         src = f'{base_directory}{ID}/Video/{folder}/{file_front}'
         dst = f'{base_directory}{ID1}_{gender}/Video/{folder}/{file_front}' 
         shutil.copyfile(src, dst)   
         print(f'{counter}/{total_files} file -> {base_directory}{ID1}_{gender}/Video/{folder}/{file_front}')
+        
+        # perform arranging the logs to the corresponding videos => match_logs_to_videos(src, log_files) in ipynb one
+        # then copy the logs files since they match the videos now => shutil.copyfile(log_file, dst)
         
 
     elif int(ID2) in data[gender]:
@@ -102,6 +147,6 @@ for index, row in filtered_df.iterrows():
         dst = f'file -> {base_directory}{ID2}_{gender}/Video/{folder}/{file_front}'
         shutil.copyfile(src, dst)
         print(f'{counter}/{total_files} file -> {base_directory}{ID2}_{gender}/Video/{folder}/{file_front}')
-       
+
     g[gender] += 1
     # counter += 1
