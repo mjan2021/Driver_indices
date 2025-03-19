@@ -22,6 +22,8 @@ from flask import render_template, request, redirect, url_for, abort, send_from_
 from markupsafe import escape
 import pandas as pd
 import metaData
+import ffmpeg
+import subprocess
 
 """
 Flask App defaults
@@ -33,7 +35,10 @@ Flask App defaults
 # Server Video Address
 # this can't be modified with function parameter
 # app = Flask(__name__, static_folder='/mnt/ivsdccoa/VideoPlayback')
-app = Flask(__name__, static_folder='Y:/VideoPlayback')
+# app = Flask(__name__, static_folder='Y:/VideoPlayback')
+
+FFMPEG = './assets/ffmpeg/bin/ffmpeg.exe'
+app = Flask(__name__, static_folder='./static/')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config['UPLOAD_EXTENSIONS'] = ['.json',]
 app.config['UPLOAD_PATH'] = 'assets/uploads/'
@@ -644,13 +649,11 @@ def merge_data():
     print(f'merge_data(): Data merged successfully')
     # return the file as a download
     return send_file('./merged_data_dropper.csv', as_attachment=True)
-    
-    
+        
 # Create a function to check if a timestamp is within a given interval
 def check_interval(row, video_data):
         total = video_data[(video_data['id'] == row['PID']) & (video_data['timestamp'] >= row['trip start formatted']) & (video_data['timestamp'] <= row['trip end formatted'])]
         return total['type'].value_counts().to_dict()
-
 
 def flatten_json_timestamps(json_file):
     with open(json_file) as f:
@@ -671,7 +674,57 @@ def flatten_json_timestamps(json_file):
 
     df = pd.DataFrame(flat_data)
     return df
+
+
+@app.route('/sandbox')
+def sandbox():
+    data = {"front": "./GenderData/1001/Video/2021-11-09/T100504000100.asf",
+            "driver": "./GenderData/1001/Video/2021-11-09/T100504000000.asf",
+            "map": [],
+            "plot": []}
     
+    # data['driver'] = convert_asf_to_mp4(data['driver'], './static/driver.mp4')
+    # data['front'] = convert_asf_to_mp4(data['front'], './static/front.mp4')
+    
+    
+    return render_template('sandbox.html', data=data)
+
+def get_telematic_plot_for_sandbox():
+    
+    return ""
+
+def get_gps_data_for_sandbox():
+    
+    return ""
+
+def convert_asf_to_mp4(input_file, output_file):
+    """ Convert ASF to MP4 using FFmpeg """
+    if not os.path.exists(input_file):
+        print(f"Error: Input file '{input_file}' does not exist.")
+        return False
+
+    try:
+        result = subprocess.run(
+            [FFMPEG, "-i", input_file, "-c:v", "libx264", "-crf", "23", "-preset", "fast", "-c:a", "aac", "-b:a", "128k", output_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True  
+        )
+        print(result.stdout)
+        print(result.stderr) 
+
+        if result.returncode == 0:
+            print(f"Conversion successful! Saved as {output_file}")
+            return output_file
+        else:
+            print("FFmpeg encountered an error.")
+            return None
+
+    except Exception as e:
+        print(f"Error running FFmpeg: {e}")
+        return None
+
+
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
     argsparser.add_argument('--type', help='server or local')
@@ -687,6 +740,9 @@ if __name__ == '__main__':
     elif args.type == 'server':
         videos_url = '/mnt/ivsdccoa/VIDEOS'
         video_playback = '/mnt/ivsdccoa/VideoPlayback/'
+    elif args.type =='test':
+        video_url = './GenderData/1001/'
+        video_playback = './static/'
 
     excluded_list.append([f for f in video_url if f.find('male') != -1 or f.find('female') != -1])
     app.config["TEMPLATES_AUTO_RELOAD"] = True

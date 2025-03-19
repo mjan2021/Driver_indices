@@ -14,3 +14,5 @@ deeplearning-mci
 /gender_split/*/*.jpg
 /gender_split/image_data/*/*.jpg
 /GenderData/*
+/assets/ffmpeg/*
+/static/*
