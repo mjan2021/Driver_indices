@@ -151,20 +151,31 @@ def statistics():
     # print(f"Files List: {glob.glob(path, recursive=True)}")
     for file in files:
         id = file.split('\\')[1]
+        # print(id)
         file_meta = metaData.get_meta(file)
+        # print(file_meta['filesize'])
+        # print(f"{datafile}")
         if id in datafile.keys():
+            # print(f"{len(datafile[id])}")
             if len(datafile[id]) < 3:
                 size = file_meta['filesize'] / 1073741824
                 datafile[id].append(round(size, 2))
+                # print(datafile)
             else:
                 size = file_meta['filesize'] / 1073741824
                 datafile[id][2] += round(size, 2)
+    # print(datafile)
 
     return render_template('Statistics.html', files=datafile)
 
 
 @app.route('/')
 def db():
+    # try:
+            
+    # print(f"Page visited")
+    # try:
+    print()
 
     with open('Datafiles/storage_stats.json') as json_file:
         data_file = json.load(json_file)
@@ -192,21 +203,9 @@ def db():
                 excluded_list.append(folder)
             else:
                 total_drivers.append(folder)
-    total_drivers_list = []
-    for each_driver in total_drivers:
-        # 1003_1004 , 1003_male, 1004_female
-        if "_" in each_driver:
-            two_drivers = each_driver.split("_")
-            for every_driver in two_drivers:
-                if every_driver not in total_drivers and "male" not in every_driver:
-                    total_drivers_list.append(every_driver)
-        else:
-            total_drivers_list.append(each_driver)
-    if args.log == "debug":
-        print(f"total drivers list: {total_drivers_list}")
+    
     hours = get_driving_hours('data_storage.json')
-    if args.log == "debug":
-        print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+    print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
     # print(f" Hours: {hours}")
         
     for count in total_drivers:
@@ -214,8 +213,7 @@ def db():
             min_max = metaData.min_max_date(count, videos_url)
             start_end_date[count] = min_max
 
-    if args.log == "debug":
-        print(f"Min_Max: {start_end_date}")
+    print(f"Min_Max: {start_end_date}")
     
         # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
     list_of_zero_value_drivers = []
@@ -223,14 +221,15 @@ def db():
         if 0 in value:
             list_of_zero_value_drivers.append(key)
 
+    print(f"Driver with Zero Value Error: {list_of_zero_value_drivers}")
+    
     for item in list_of_zero_value_drivers:
         hours.pop(item, None)
 
-    if args.log == "debug":
-        print(f"<<<<<<<<< \n {hours} \n >>>>>>>>>>")
+    print(f"<<<<<<<<< \n {hours} \n >>>>>>>>>>")
     Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                            total_drivers=len(total_drivers_list), start_end_date=start_end_date, Total_videos=Total_videos)
+                            total_drivers=len(total_drivers), start_end_date=start_end_date, Total_videos=Total_videos)
     # except Exception as e:
     #     return f"Oops! Something went wrong..... /n{e}"
 
@@ -245,8 +244,7 @@ def upload_files():
     with open(json_path+str(uploaded_file.filename)) as f:
         jsonfile = json.load(f)
     to_dataframe = pd.DataFrame(jsonfile['data'])
-    if args.log == "debug":
-        print(f'File Uploaded to : {excel_path} as {str(uploaded_file.filename.split(".")[0])+".xlsx"}')
+    print(f'File Uploaded to : {excel_path} as {str(uploaded_file.filename.split(".")[0])+".xlsx"}')
     to_dataframe.to_excel(os.path.join(excel_path, str(uploaded_file.filename.split('.')[0])+".xlsx"))
 
     return send_file(f"assets/uploads/convertedExcel/{str(uploaded_file.filename.split('.')[0])}.xlsx", as_attachment=True)
@@ -296,8 +294,7 @@ def timestamp():
     for file in video_cache:
         os.remove(os.path.join(video_playback, file))
 
-    if args.log == "debug":
-        print(f'Cache Cleared...')
+    print(f'Cache Cleared...')
 
     ts = request.args.get('ts')  # indice timestamp
     id = request.args.get('id')  # driver id
@@ -305,8 +302,7 @@ def timestamp():
     time = "".join(list(ts)[8:])  # time extracted from indice timestamp
     date = "".join(list(ts)[:8])  # date extracted from indice timestamp
     playback_path = video_playback
-    if args.log == "debug":
-        print(f"URL Arguments >> Time: {time}, Date : {date} ")
+    print(f"URL Arguments >> Time: {time}, Date : {date} ")
     
     driver = videos_url + '/' + id + '/Video/**/*000.asf'
     front = videos_url + '/' + id + '/Video/**/*100.asf'  # Hard coded path - make sure it exist
@@ -337,8 +333,7 @@ def timestamp():
     seconds_diff = time_formated.second - file_formated.second
     total_diff = (minutes_diff * 60) + seconds_diff
 
-    if args.log == "debug":
-        print(f"Difference (Seconds) : {total_diff}")
+    print(f"Difference (Seconds) : {total_diff}")
     clip = VideoFileClip(driver_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
     clip_front = VideoFileClip(front_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
 
@@ -346,8 +341,7 @@ def timestamp():
     clip.write_videofile(video_playback+'test.mp4', fps=30, audio=False)
     clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
 
-    if args.log == "debug":
-        print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
+    print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
     filename = glob.glob(playback_path+'*')
 
     # validated = check_validated_status(id, date, col, ts)
@@ -356,8 +350,7 @@ def timestamp():
 
 # this is called in display.html to check status of validated/discard buttons
 def check_validated_status(id, date, col, timestamp):
-    if args.log == "debug":
-        print(f'Driver ID: {id}, Date: {date}, Column: {col}, Timestamp: {timestamp}')
+    print(f'Driver ID: {id}, Date: {date}, Column: {col}, Timestamp: {timestamp}')
 
     with open('validate.json', 'r') as val:
         validated = json.load(val)
@@ -391,8 +384,7 @@ def valid():
     ts = str(request.args.get('ts'))
     id = str(request.args.get('id'))
 
-    if args.log == "debug":
-        print(f'col: {col}, ts: {ts}, id: {id}')
+    print(f'col: {col}, ts: {ts}, id: {id}')
 
     date = "".join(list(ts)[:8])
 
@@ -442,19 +434,16 @@ def valid():
 
 
         elif date in dates_list[value['id']]:
-            if args.log == "debug":
-                print(f'Date Present in List:  Matching..')
+            print(f'Date Present in List:  Matching..')
             if valid['data'][idx]['id'] == id and valid['data'][idx]['day'] == date:
-                if args.log == "debug":
-                    print(f'Matching Timestamps...')
+                print(f'Matching Timestamps...')
                 if ts not in valid['data'][idx][col]['timestamp']:
                     valid['data'][idx][col]['total'] += 1
                     valid['data'][idx][col]['timestamp'].append(ts)
                     print(f'Matched...')
                     break
     valid['data'].append(indice)
-    if args.log == "debug":
-        print(f'Total Validated: {len(valid["data"])}')
+    print(f'Total Validated: {len(valid["data"])}')
     with open('validate.json', 'w') as ds:
         json.dump(valid, ds)
 
@@ -476,8 +465,7 @@ def discarded_data():
     ts = str(request.args.get('ts'))
     id = str(request.args.get('id'))
 
-    if args.log == "debug":
-        print(f'col: {col}, ts: {ts}, id: {id}')
+    print(f'col: {col}, ts: {ts}, id: {id}')
 
     date = "".join(list(ts)[:8])
 
@@ -514,15 +502,12 @@ def discarded_data():
         "redlight": {"total": 0, "timestamp": []},
         "pedestrian": {"total": 0, "timestamp": []}
     }
-    if args.log == "debug":
-        print(f'All Driver Dates: {dates_list}')
+    print(f'All Driver Dates: {dates_list}')
     for idx, value in enumerate(discard['data']):
-        if args.log == "debug":
-            print(f'Index: {idx}, Value: {value["day"]} \n List of dates : {dates_list[value["id"]]}')
+        print(f'Index: {idx}, Value: {value["day"]} \n List of dates : {dates_list[value["id"]]}')
 
         if date not in dates_list[value['id']]:
-            if args.log == "debug":
-                print(f'Not Present!')
+            print(f'Not Present!')
             indice['id'] = str(id)
             indice['day'] = str(date)
             indice[str(col)]['total'] += 1
@@ -531,8 +516,7 @@ def discarded_data():
 
 
         elif date in dates_list[value['id']]:
-            if args.log == "debug":
-                print(f'Date Present in List:  Matching..')
+            print(f'Date Present in List:  Matching..')
             if discard['data'][idx]['id'] == id and discard['data'][idx]['day'] == date:
                 print(f'Matching Timestamps...')
                 if ts not in discard['data'][idx][col]['timestamp']:
@@ -695,7 +679,6 @@ def flatten_json_timestamps(json_file):
 if __name__ == '__main__':
     argsparser = argparse.ArgumentParser()
     argsparser.add_argument('--type', help='server or local')
-    argsparser.add_argument('-l', '--log', help="Log level (debug, prod)")
     args = argsparser.parse_args()
     video_url = ''
     if args.type == 'local':

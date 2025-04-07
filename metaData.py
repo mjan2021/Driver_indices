@@ -172,10 +172,11 @@ def min_max_date(driver_id, url):
     if len(list_of_dates) > 0: 
         # .DS_Store: handlign MacOS created files error
         int_list = [int("".join(date.split('-'))) for date in list_of_dates if date != '.DS_Store']
-        print(f"metaData::min_max_date(): {driver_id}")
+        # print(f"metaData::min_max_date(): {driver_id}")
         min_value, max_value = min(int_list), max(int_list)
     else:
-        print(f"Driver ID: {driver_id} has no data")
+        pass
+        # print(f"Driver ID: {driver_id} has no data")
     # min_value, max_value = min(dateList), max(dateList)
     return [min_value, max_value]
 
