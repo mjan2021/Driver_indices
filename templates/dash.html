@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Older Driver Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        #topDriversTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #topDriversTable th, #topDriversTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #topDriversTable th {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        .driver-info {
+            margin-top: 20px;
+        }
+        #lineChart, #heatMap {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Older Driver Analytics Dashboard</h1>
+    <p>Click on a driver ID to see more details.</p>
+
+    <div id="loadingMessage">Loading top drivers...</div>
+    <table id="topDriversTable">
+        <thead>
+            <tr>
+                <th>Driver ID</th>
+                <th>Total Days Driven</th>
+                <th>Total Duration (hours)</th>
+                <th>Avg Daily Duration (hours)</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <div class="driver-info" style="display: none;">
+        <h2 id="driverDetailHeader"></h2>
+        <div id="lineChart"></div>
+        <div id="heatMap"></div>
+    </div>
+</div>
+
+<script>
+    async function fetchTopDrivers() {
+        try {
+            const response = await fetch('/api/top_drivers');
+            const drivers = await response.json();
+            const tableBody = document.querySelector('#topDriversTable tbody');
+            tableBody.innerHTML = ''; // Clear existing data
+            
+            if (drivers.length > 0) {
+                document.getElementById('loadingMessage').style.display = 'none';
+                drivers.forEach(driver => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td><a href="#" onclick="fetchDriverDetails(${driver.driver_id}); return false;">${driver.driver_id}</a></td>
+                        <td>${driver.total_days_driven}</td>
+                        <td>${driver.total_duration_hours}</td>
+                        <td>${driver.average_daily_duration_hours}</td>
+                    `;
+                });
+            } else {
+                document.getElementById('loadingMessage').innerText = "No driver data found. Please check your files.";
+            }
+        } catch (error) {
+            console.error("Error fetching top drivers:", error);
+            document.getElementById('loadingMessage').innerText = "Failed to load data.";
+        }
+    }
+
+    async function fetchDriverDetails(driverId) {
+        try {
+            const response = await fetch(`/api/driver_data/${driverId}`);
+            const dailyData = await response.json();
+            
+            document.querySelector('.driver-info').style.display = 'block';
+            document.getElementById('driverDetailHeader').innerText = `Details for Driver ID: ${driverId}`;
+            
+            if (dailyData.length > 0) {
+                // Prepare data for line chart
+                const dates = dailyData.map(d => d.date);
+                const durations = dailyData.map(d => d.duration_minutes / 60);
+
+                const trace1 = {
+                    x: dates,
+                    y: durations,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Daily Driving Duration'
+                };
+
+                const layout1 = {
+                    title: 'Daily Driving Duration Over Time',
+                    xaxis: { title: 'Date' },
+                    yaxis: { title: 'Duration (hours)' }
+                };
+
+                Plotly.newPlot('lineChart', [trace1], layout1);
+
+                // Prepare data for heatmap
+                const z = [];
+                const x = [];
+                const y = [];
+                
+                dailyData.forEach(d => {
+                    x.push(d.date);
+                    y.push(driverId);
+                    z.push(d.duration_minutes / 60);
+                });
+
+                const trace2 = {
+                    z: z,
+                    x: x,
+                    y: y,
+                    type: 'heatmap',
+                    colorscale: 'Viridis',
+                    colorbar: { title: 'Duration (hours)' }
+                };
+
+                const layout2 = {
+                    title: 'Driving Activity Heatmap',
+                    xaxis: { type: 'category' },
+                    yaxis: { title: 'Driver ID', type: 'category' }
+                };
+
+                Plotly.newPlot('heatMap', [trace2], layout2);
+
+            } else {
+                document.getElementById('lineChart').innerText = "No detailed data for this driver.";
+                document.getElementById('heatMap').innerHTML = "";
+            }
+        } catch (error) {
+            console.error("Error fetching driver details:", error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', fetchTopDrivers);
+</script>
+
+</body>
+</html>
