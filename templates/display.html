@@ -54,12 +54,42 @@
       </nav>
 <br>
 
+{% if error_message %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+  var details = "{% for item in (missing_urls or []) %}{{ item|replace('\\', '\\\\') }}{% if not loop.last %}\\n{% endif %}{% endfor %}";
+  alert("Video doesn't exist.\\n" + "{{ error_message }}" + (details ? "\\n\\nFull URL(s):\\n" + details : ""));
+  });
+</script>
+{% endif %}
+
 <div class="container-fluid">
+  {% if error_message %}
+  <div class="row">
+    <div class="col-md-12">
+      <div class="alert alert-warning" role="alert">
+        <strong>{{ error_message }}</strong>
+        {% if missing_urls %}
+        <hr>
+        <p class="mb-1">Full URL(s) checked:</p>
+        <ul class="mb-0">
+          {% for item in missing_urls %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
     <div class="row">
         <div class="col-md-8">
             <h2>Driver Facing Camera</h2>
              <video autoplay="autoplay" controls="controls" preload="preload" width="640" height="480">
-        <source src={{ url_for('static', filename="test.mp4") }} type="video/mp4">
+    {% if driver_clip %}
+    <source src={{ url_for('static', filename=driver_clip) }} type="video/mp4">
+    {% endif %}
     </video>
         </div>
         <div class="col-md-4">
@@ -75,7 +105,9 @@
         <div class="col-md-8">
             <h2>Front Facing Camera</h2>
              <video autoplay="autoplay" controls="controls" preload="preload" width="640" height="480">
-        <source src={{ url_for('static', filename="test_front.mp4") }} type="video/mp4">
+      {% if front_clip %}
+      <source src={{ url_for('static', filename=front_clip) }} type="video/mp4">
+      {% endif %}
     </video>
         </div>
         <div class="col-md-4">

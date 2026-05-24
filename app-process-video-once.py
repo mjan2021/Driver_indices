@@ -12,6 +12,14 @@ def process_videos(main_folder='Y:\\VIDEOS'):
         print(f"Main folder '{main_folder}' not found.")
         return pd.DataFrame(), pd.DataFrame()
 
+    # writing to a file
+    # daily_df_txt = open('daily_driving_data.txt', 'w+')
+    
+    # if file doesn't exist create
+    if not os.path.exists('daily_driving_data.txt'):
+        with open('daily_driving_data.txt', 'w+') as daily_df_txt:
+            daily_df_txt.write("driver_id,date,duration_minutes\n")
+            
     # Iterate through each driver ID folder
     for driver_id in os.listdir(main_folder):
         driver_path = os.path.join(main_folder, driver_id)
@@ -24,7 +32,11 @@ def process_videos(main_folder='Y:\\VIDEOS'):
             continue
 
         # Iterate through each date folder (e.g., 2024-04-13)
+        num_drivers = len(os.listdir(main_folder))
+        counter_driver = 0
         for date_folder in os.listdir(video_main_path):
+            counter_driver += 1
+            print(f"Processing driver {driver_id} ({counter_driver+1}/{num_drivers})")
             date_path = os.path.join(video_main_path, date_folder)
             if not os.path.isdir(date_path):
                 continue
@@ -37,7 +49,11 @@ def process_videos(main_folder='Y:\\VIDEOS'):
                 continue
 
             # Iterate through each video file
+            num_videos = len(os.listdir(date_path))
+            counter_videos = 0
             for filename in os.listdir(date_path):
+                counter_videos += 1
+                print(f"  Processing video {counter_videos}/{num_videos}")
                 if filename.endswith(('.asf', '.mp4', '.avi', '.mov')):
                     file_path = os.path.join(date_path, filename)
                     try:
@@ -50,6 +66,12 @@ def process_videos(main_folder='Y:\\VIDEOS'):
                             'date': video_date,
                             'duration_minutes': duration_seconds / 60
                         })
+                        
+                        # write to file as videos are processed
+                        with open('daily_driving_data.txt', 'a+') as daily_df_txt:
+                            daily_df_txt.write(f"{driver_id},{video_date.date()},{duration_seconds / 60}\n")
+                            
+                            
                     except Exception as e:
                         print(f"Could not process {file_path}: {e}")
 

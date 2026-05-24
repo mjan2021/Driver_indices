@@ -1,7 +1,7 @@
 #!/bin/bash
 
 storage='data_storage.json'
-root='Z:/VIDEOS/'
+root='Y:/VIDEOS/'
 
 for id in 1001 1002 1005 1006 1009 1010
 do

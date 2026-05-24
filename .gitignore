@@ -16,3 +16,8 @@ deeplearning-mci
 /GenderData/*
 /assets/ffmpeg/*
 /static/*
+*.json
+*/*.json
+
+*.csv
+*/*.csv

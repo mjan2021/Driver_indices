@@ -3,6 +3,7 @@ import cv2
 import os
 import json
 import glob
+import re
 import imghdr
 # import jsonify
 import metaData
@@ -19,11 +20,20 @@ from datetime import datetime as dt
 from werkzeug.utils import secure_filename
 # from pandas.io.json import _normalize as json_normalize
 from flask import render_template, request, redirect, url_for, abort, send_from_directory, send_file
+from flask import Flask, jsonify, render_template, request
+import pandas as pd
 from markupsafe import escape
 import pandas as pd
 import metaData
 import ffmpeg
 import subprocess
+
+CAMERA_SUFFIX_TO_ID = {
+    '000': 'driver',
+    '100': 'front',
+    '200': 'rear_left',
+    '300': 'rear_right'
+}
 
 """
 Flask App defaults
@@ -44,6 +54,8 @@ app.config['UPLOAD_EXTENSIONS'] = ['.json',]
 app.config['UPLOAD_PATH'] = 'assets/uploads/'
 path = 'data/data/cam_test/alerts'
 excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1073', '2062', '1082']
+videos_url = os.environ.get('VIDEOS_URL', 'Y:/VIDEOS')
+video_playback = os.environ.get('VIDEO_PLAYBACK', './static/')
 
 """
 # For Server
@@ -56,6 +68,49 @@ excluded_list = ['1003 1004-nonAI', '1005-nonAI', '1073', '2062', '1082']
 # For Internal Use
 # video_playback ='videplayback/'
 """
+
+# Load the data once when the app starts
+try:
+    driver_stats = pd.read_csv('driver_stats.csv')
+    daily_data = pd.read_csv('daily_driving_data.csv', parse_dates=['date'])
+except FileNotFoundError:
+    print("Data files not found. Please run the data processing script first.")
+    driver_stats = pd.DataFrame()
+    daily_data = pd.DataFrame()
+
+@app.route('/')
+def dash():
+    return render_template('dash.html')
+
+@app.route('/api/top_drivers')
+def get_top_drivers():
+    """Returns the top 5-10 drivers based on total duration."""
+    if driver_stats.empty:
+        return jsonify([])
+    
+    # Sort by total duration and select top 10
+    top_drivers = driver_stats.sort_values(by='total_duration_minutes', ascending=False).head(10)
+    
+    # Convert minutes to hours for better readability
+    top_drivers['total_duration_hours'] = round(top_drivers['total_duration_minutes'] / 60, 2)
+    top_drivers['average_daily_duration_hours'] = round(top_drivers['average_daily_duration_minutes'] / 60, 2)
+    
+    return jsonify(top_drivers.to_dict('records'))
+
+@app.route('/api/driver_data/<driver_id>')
+def get_driver_data(driver_id):
+    """Returns detailed daily data for a specific driver."""
+    if daily_data.empty:
+        return jsonify({})
+
+    driver_daily_data = daily_data[daily_data['driver_id'] == int(driver_id)]
+    if driver_daily_data.empty:
+        return jsonify({})
+    
+    # Convert dates to string format for JSON
+    driver_daily_data['date'] = driver_daily_data['date'].dt.strftime('%Y-%m-%d')
+    
+    return jsonify(driver_daily_data.to_dict('records'))
 
 def validate_image(stream):
     header = stream.read(512)
@@ -89,6 +144,11 @@ def api():
     
     return "data.keys()"
 
+
+@app.route('/favicon.ico')
+def favicon():
+    return ('', 204)
+
 @app.errorhandler(413)
 def too_large(e):
     print(f"File too large")
@@ -98,7 +158,7 @@ def too_large(e):
 @app.errorhandler(404)
 def notFound(e):
     print(f"{e}")
-    return "NotFoundError"
+    return "NotFoundError", 404
 
 
 @app.route('/db')
@@ -168,76 +228,76 @@ def statistics():
     return render_template('Statistics.html', files=datafile)
 
 
-@app.route('/')
-def db():
+# @app.route('/')
+# def db():
 
-    with open('Datafiles/storage_stats.json') as json_file:
-        data_file = json.load(json_file)
-    labels, dataset = [], []
-    start_end_date = {}
-    total_storage = 0
+#     with open('Datafiles/storage_stats.json') as json_file:
+#         data_file = json.load(json_file)
+#     labels, dataset = [], []
+#     start_end_date = {}
+#     total_storage = 0
 
-    for idx in tqdm(range(0, len(data_file))):
-        total = 0
-        data = data_file[idx]['data']
-        for idx_files in range(0, len(data)):
-            files = data_file[idx]['data'][idx_files]['files']
-            for all_file in files.values():
-                total += all_file
-        labels.append(data_file[idx]['driver_id'])
-        dataset.append(int(total))
-        total_storage += total
+#     for idx in tqdm(range(0, len(data_file))):
+#         total = 0
+#         data = data_file[idx]['data']
+#         for idx_files in range(0, len(data)):
+#             files = data_file[idx]['data'][idx_files]['files']
+#             for all_file in files.values():
+#                 total += all_file
+#         labels.append(data_file[idx]['driver_id'])
+#         dataset.append(int(total))
+#         total_storage += total
 
-    # if item is not a directory then it will be not added to the list
-    total_drivers = []
+#     # if item is not a directory then it will be not added to the list
+#     total_drivers = []
 
-    for folder in os.listdir(videos_url):
-        if os.path.isdir(os.path.join(videos_url, folder)):
-            if "male" in folder:
-                excluded_list.append(folder)
-            else:
-                total_drivers.append(folder)
-    total_drivers_list = []
-    for each_driver in total_drivers:
-        # 1003_1004 , 1003_male, 1004_female
-        if "_" in each_driver:
-            two_drivers = each_driver.split("_")
-            for every_driver in two_drivers:
-                if every_driver not in total_drivers and "male" not in every_driver:
-                    total_drivers_list.append(every_driver)
-        else:
-            total_drivers_list.append(each_driver)
-    if args.log == "debug":
-        print(f"total drivers list: {total_drivers_list}")
-    hours = get_driving_hours('data_storage.json')
-    if args.log == "debug":
-        print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
-    # print(f" Hours: {hours}")
+#     for folder in os.listdir(videos_url):
+#         if os.path.isdir(os.path.join(videos_url, folder)):
+#             if "male" in folder:
+#                 excluded_list.append(folder)
+#             else:
+#                 total_drivers.append(folder)
+#     total_drivers_list = []
+#     for each_driver in total_drivers:
+#         # 1003_1004 , 1003_male, 1004_female
+#         if "_" in each_driver:
+#             two_drivers = each_driver.split("_")
+#             for every_driver in two_drivers:
+#                 if every_driver not in total_drivers and "male" not in every_driver:
+#                     total_drivers_list.append(every_driver)
+#         else:
+#             total_drivers_list.append(each_driver)
+#     if args.log == "debug":
+#         print(f"total drivers list: {total_drivers_list}")
+#     hours = get_driving_hours('data_storage.json')
+#     if args.log == "debug":
+#         print(f"Chart: {labels},\n Data : {dataset}, \n Hours: {hours}")
+#     # print(f" Hours: {hours}")
         
-    for count in total_drivers:
-        if count not in excluded_list:
-            min_max = metaData.min_max_date(count, videos_url)
-            start_end_date[count] = min_max
+#     for count in total_drivers:
+#         if count not in excluded_list:
+#             min_max = metaData.min_max_date(count, videos_url)
+#             start_end_date[count] = min_max
 
-    if args.log == "debug":
-        print(f"Min_Max: {start_end_date}")
+#     if args.log == "debug":
+#         print(f"Min_Max: {start_end_date}")
     
-        # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
-    list_of_zero_value_drivers = []
-    for key, value in hours.items():
-        if 0 in value:
-            list_of_zero_value_drivers.append(key)
+#         # This Snipped will get rid of ZeroDvisionError for Average Driving hours Chart
+#     list_of_zero_value_drivers = []
+#     for key, value in hours.items():
+#         if 0 in value:
+#             list_of_zero_value_drivers.append(key)
 
-    for item in list_of_zero_value_drivers:
-        hours.pop(item, None)
+#     for item in list_of_zero_value_drivers:
+#         hours.pop(item, None)
 
-    if args.log == "debug":
-        print(f"<<<<<<<<< \n {hours} \n >>>>>>>>>>")
-    Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
-    return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
-                            total_drivers=len(total_drivers_list), start_end_date=start_end_date, Total_videos=Total_videos)
-    # except Exception as e:
-    #     return f"Oops! Something went wrong..... /n{e}"
+#     if args.log == "debug":
+#         print(f"<<<<<<<<< \n {hours} \n >>>>>>>>>>")
+#     Total_videos = len(glob.glob(videos_url+'/**/Video/*/*100.asf'))
+#     return render_template('db.html', data=[labels, dataset], hours=hours, total=round(total_storage / 1000, 2),
+#                             total_drivers=len(total_drivers_list), start_end_date=start_end_date, Total_videos=Total_videos)
+#     # except Exception as e:
+#     #     return f"Oops! Something went wrong..... /n{e}"
 
 @app.route('/uploading', methods=['POST'])
 def upload_files():
@@ -291,73 +351,253 @@ def download_json():
 @app.route('/timestamp')
 def timestamp():
     """
-    Extract part of video based on the timestamp of the indice
-    :return: render_template
+    Extract and display synchronized clips from driver/front cameras for a requested event timestamp.
     """
-    # Empty Cache Directory
+    def _is_debug_enabled():
+        try:
+            return args.log == "debug"
+        except Exception:
+            return False
 
-    # video_cache = os.listdir(app.static_folder)
-    video_cache = os.listdir(video_playback)
-    for file in video_cache:
-        os.remove(os.path.join(video_playback, file))
+    def _parse_request_timestamp(ts_value):
+        if not ts_value:
+            return None
+        cleaned = re.sub(r'\D', '', str(ts_value))
+        if len(cleaned) < 14:
+            return None
 
-    if args.log == "debug":
-        print(f'Cache Cleared...')
+        # Use first 14 digits to avoid errors like: "unconverted data remains".
+        cleaned = cleaned[:14]
+        try:
+            return dt.strptime(cleaned, '%Y%m%d%H%M%S')
+        except ValueError:
+            return None
 
-    ts = request.args.get('ts')  # indice timestamp
-    id = request.args.get('id')  # driver id
-    col = request.args.get('col')  # column name
-    time = "".join(list(ts)[8:])  # time extracted from indice timestamp
-    date = "".join(list(ts)[:8])  # date extracted from indice timestamp
-    playback_path = video_playback
-    if args.log == "debug":
-        print(f"URL Arguments >> Time: {time}, Date : {date} ")
-    
-    driver = videos_url + '/' + id + '/Video/**/*000.asf'
-    front = videos_url + '/' + id + '/Video/**/*100.asf'  # Hard coded path - make sure it exist
-    driver_files = glob.glob(driver, recursive=True)  # list of video for selected driver from driver facing camera
-    front_files = glob.glob(front, recursive=True)  # list of videos for selected driver from front facing camera
-    differences_list = {}
-    
-    # Cleaning the naming convention for files
-    for idx in range(0, len(driver_files)):
-        file_path = driver_files[idx].replace('\\', '/')
-        cleanup_date = "".join(file_path.split('/')[-2].split('-'))
-        cleanup_filename = file_path.split('/')[-1].split('.')[0][1:7]
-    
-        # matching date of indice with the folder date
-        if cleanup_date == date:
-    
-            # matching Time of the indice with file name
-            if int(cleanup_filename) < int(time):
-                d = int(time) - int(cleanup_filename)
-                differences_list[int(idx)] = d
+    def _hhmmss_to_seconds(hhmmss):
+        if hhmmss is None:
+            return None
+        hhmmss = re.sub(r'\D', '', str(hhmmss))
+        if len(hhmmss) != 6:
+            return None
+        try:
+            parsed = dt.strptime(hhmmss, '%H%M%S').time()
+        except ValueError:
+            return None
+        return parsed.hour * 3600 + parsed.minute * 60 + parsed.second
 
-    selected = min(differences_list.items(), key= lambda x:x[1])
-    file_time = driver_files[selected[0]].replace('\\', '/')
-    file_time_clean = file_time.split('/')[-1].split('.')[0][1:7]
-    file_formated = datetime.datetime.strptime(file_time_clean, '%H%M%S').time()
-    time_formated = datetime.datetime.strptime(time, '%H%M%S').time()
-    minutes_diff = time_formated.minute - file_formated.minute
-    seconds_diff = time_formated.second - file_formated.second
-    total_diff = (minutes_diff * 60) + seconds_diff
+    def _extract_file_start_time_and_suffix(file_path):
+        # Handles file names like:
+        # - T185121000000.asf -> start=185121, suffix=000
+        # - 185121000.asf     -> start=185121, suffix=000
+        basename = os.path.splitext(os.path.basename(file_path))[0]
+        digits = re.sub(r'\D', '', basename)
 
-    if args.log == "debug":
-        print(f"Difference (Seconds) : {total_diff}")
-    clip = VideoFileClip(driver_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
-    clip_front = VideoFileClip(front_files[selected[0]]).subclip(int(total_diff) - 10, int(total_diff) + 20)
+        # 12-digit layout (HHMMSS + 3 extra + 3 camera suffix)
+        if len(digits) >= 12:
+            start_hhmmss = digits[:6]
+            suffix = digits[-3:]
+            return start_hhmmss, suffix
 
-    clipped_video_folder = os.listdir(video_playback)
-    clip.write_videofile(video_playback+'test.mp4', fps=30, audio=False)
-    clip_front.write_videofile(video_playback+'test_front.mp4', fps=30, audio=False)
+        # 9-digit layout (HHMMSS + 3 camera suffix)
+        if len(digits) >= 9:
+            start_hhmmss = digits[:6]
+            suffix = digits[-3:]
+            return start_hhmmss, suffix
 
-    if args.log == "debug":
-        print(f"Time(url) : {time} - Time(filename) : {driver_files[selected[0]]} - Difference: {total_diff}")
-    filename = glob.glob(playback_path+'*')
+        return None, None
 
-    # validated = check_validated_status(id, date, col, ts)
-    validated= []
-    return render_template('display.html', data=[filename], col=col, id=id, ts=ts, validation=validated)
+    def _clip_to_mp4(input_asf, output_mp4, start_sec, duration_sec):
+        os.makedirs(os.path.dirname(output_mp4), exist_ok=True)
+        ffmpeg_bin = FFMPEG if os.path.exists(FFMPEG) else 'ffmpeg'
+        cmd = [
+            ffmpeg_bin,
+            '-y',
+            '-ss', str(max(0, start_sec)),
+            '-i', input_asf,
+            '-t', str(max(1, duration_sec)),
+            '-an',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '23',
+            output_mp4
+        ]
+        completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return completed.returncode == 0
+
+    def _find_date_camera_files(driver_id, date_folder):
+        base_dir = os.path.join(videos_url, driver_id)
+        if not os.path.isdir(base_dir):
+            return []
+
+        matched_files = []
+        for root, _, files in os.walk(base_dir):
+            root_parts = [part.lower() for part in root.replace('\\', '/').split('/')]
+            if date_folder.lower() not in root.lower():
+                continue
+            if not any(part.startswith('video') for part in root_parts):
+                continue
+            for name in files:
+                if name.lower().endswith('.asf'):
+                    matched_files.append(os.path.join(root, name))
+        return matched_files
+
+    def _render_missing_video(message, missing_urls, col_name, req_driver_id, req_ts):
+        if _is_debug_enabled():
+            print(f"timestamp(): {message} | missing={missing_urls}")
+        return render_template(
+            'display.html',
+            data=[[]],
+            col=col_name,
+            id=req_driver_id,
+            ts=req_ts,
+            validation=[],
+            driver_clip=None,
+            front_clip=None,
+            error_message=message,
+            missing_urls=missing_urls
+        )
+
+    ts = request.args.get('ts')
+    driver_id = request.args.get('id')
+    col = request.args.get('col')
+
+    event_dt = _parse_request_timestamp(ts)
+    if event_dt is None:
+        return _render_missing_video(
+            'Video does not exist for requested timestamp (invalid timestamp format).',
+            [f"Request ts={ts}"],
+            col,
+            driver_id,
+            ts
+        )
+
+    date_folder = event_dt.strftime('%Y-%m-%d')
+    event_hhmmss = event_dt.strftime('%H%M%S')
+    event_sec = _hhmmss_to_seconds(event_hhmmss)
+    if event_sec is None:
+        return _render_missing_video(
+            'Video does not exist for requested timestamp (invalid time segment).',
+            [f"Request ts={ts}"],
+            col,
+            driver_id,
+            ts
+        )
+    expected_driver_file = f"*{event_hhmmss}000.asf"
+    expected_front_file = f"*{event_hhmmss}100.asf"
+    expected_paths = [
+        os.path.join(videos_url, str(driver_id), 'Video', date_folder, expected_driver_file),
+        os.path.join(videos_url, str(driver_id), 'Video', date_folder, expected_front_file)
+    ]
+
+    if _is_debug_enabled():
+        print(f"timestamp(): id={driver_id}, ts={ts}, parsed_date={date_folder}, parsed_time={event_hhmmss}")
+
+    all_files = _find_date_camera_files(str(driver_id), date_folder)
+    if not all_files:
+        return _render_missing_video(
+            f"Video doesn't exist for driver {driver_id} on {date_folder}.",
+            expected_paths,
+            col,
+            driver_id,
+            ts
+        )
+
+    driver_candidates = []
+    front_by_time = {}
+
+    for path in all_files:
+        start_hhmmss, suffix = _extract_file_start_time_and_suffix(path)
+        if not start_hhmmss or suffix not in CAMERA_SUFFIX_TO_ID:
+            continue
+        start_sec = _hhmmss_to_seconds(start_hhmmss)
+        if start_sec is None:
+            if _is_debug_enabled():
+                print(f"timestamp(): skipping malformed filename time in {path}")
+            continue
+        camera_type = CAMERA_SUFFIX_TO_ID[suffix]
+        item = {'path': path, 'start_hhmmss': start_hhmmss, 'start_sec': start_sec}
+        if camera_type == 'driver':
+            driver_candidates.append(item)
+        elif camera_type == 'front':
+            front_by_time[start_hhmmss] = item
+
+    if not driver_candidates:
+        return _render_missing_video(
+            f"Driver video doesn't exist for driver {driver_id} on {date_folder}.",
+            expected_paths,
+            col,
+            driver_id,
+            ts
+        )
+
+    # Pick the nearest segment start time to the requested timestamp.
+    driver_candidates.sort(key=lambda x: x['start_sec'])
+    selected_driver = min(driver_candidates, key=lambda x: abs(x['start_sec'] - event_sec))
+
+    selected_front = front_by_time.get(selected_driver['start_hhmmss'])
+    if selected_front is None and front_by_time:
+        selected_front = sorted(front_by_time.values(), key=lambda x: abs(x['start_sec'] - selected_driver['start_sec']))[0]
+    if selected_front is None:
+        nearest_driver_expected = os.path.splitext(selected_driver['path'])[0][:-3] + '000.asf'
+        nearest_front_expected = os.path.splitext(selected_driver['path'])[0][:-3] + '100.asf'
+        return _render_missing_video(
+            f"Front video doesn't exist for driver {driver_id} near timestamp {ts}.",
+            [nearest_driver_expected, nearest_front_expected],
+            col,
+            driver_id,
+            ts
+        )
+
+    offset_sec = max(0, event_sec - selected_driver['start_sec'])
+    clip_start = max(0, offset_sec - 10)
+    clip_duration = 30
+
+    # Always place generated clips under Flask static directory so /static/* can serve them.
+    playback_path = app.static_folder
+    os.makedirs(playback_path, exist_ok=True)
+    driver_clip_name = 'test.mp4'
+    front_clip_name = 'test_front.mp4'
+    driver_clip_path = os.path.join(playback_path, driver_clip_name)
+    front_clip_path = os.path.join(playback_path, front_clip_name)
+
+    for stale_name in [driver_clip_name, front_clip_name]:
+        stale_path = os.path.join(playback_path, stale_name)
+        if os.path.exists(stale_path):
+            os.remove(stale_path)
+
+    ok_driver = _clip_to_mp4(selected_driver['path'], driver_clip_path, clip_start, clip_duration)
+    ok_front = _clip_to_mp4(selected_front['path'], front_clip_path, clip_start, clip_duration)
+    if not ok_driver or not ok_front:
+        failed_paths = []
+        if not ok_driver:
+            failed_paths.append(selected_driver['path'])
+        if not ok_front:
+            failed_paths.append(selected_front['path'])
+        return _render_missing_video(
+            "Video exists but clip generation failed.",
+            failed_paths,
+            col,
+            driver_id,
+            ts
+        )
+
+    if _is_debug_enabled():
+        print(
+            f"timestamp(): selected_driver={selected_driver['path']}, selected_front={selected_front['path']}, "
+            f"offset={offset_sec}s, clip_start={clip_start}s, duration={clip_duration}s"
+        )
+
+    validated = []
+    return render_template(
+        'display.html',
+        data=[[driver_clip_path, front_clip_path]],
+        col=col,
+        id=driver_id,
+        ts=ts,
+        validation=validated,
+        driver_clip=driver_clip_name,
+        front_clip=front_clip_name
+    )
 
 # this is called in display.html to check status of validated/discard buttons
 def check_validated_status(id, date, col, timestamp):
